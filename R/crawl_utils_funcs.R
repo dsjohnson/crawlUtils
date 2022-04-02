@@ -211,7 +211,20 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
     dat <- data_list[[i]] %>% dplyr::arrange(datetime)
     alsg <- all(dat$type%in%c("Argos_ls","FastGPS","known"))
     akfg <- all(dat$type%in%c("Argos_kf","FastGPS","known"))
-    if(!alsg & !akfg) stop("Animal ", i, " has both LS and KF Argos location types or other unknown types!")
+    if(!alsg & !akfg) {
+      pct_alsg <- (dat %>% filter(type=="Argos_ls") %>% nrow()) / nrow(dat)
+      pct_akfg <- (dat %>% filter(type=="Argos_kf") %>% nrow()) / nrow(dat)
+      argos_pick <- if_else(pct_alsg > pct_akfg, "LS", "KF")
+      if (argos_pick == "LS") {
+        dat <- dat %>% filter(type %in% c("Argos_ls","FastGPS","known"))
+      }
+      if (argos_pick == "KF") {
+        dat <- dat %>% filter(type %in% c("Argos_kf","FastGPS","known"))
+      }
+      warning("Animal ", i, " has both LS and KF Argos location types or other unknown types!\n",
+              "Keeping ", argos_pick, " becuase ", argos_pick, " represents ",
+              "the larger percentage of the observations.")
+    }
     if(alsg & akfg) alsg <- FALSE
     if(alsg){
       err.model <- list(x =  ~0+ln.sd.x+aq0+aqA+aqB)
