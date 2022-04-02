@@ -127,6 +127,7 @@ cu_location_rate <- function(x, time_name, time_unit="day", stat=mean, ...){
 #' For other types it is ignored.
 #' @author Devin S. Johnson
 #' @import dplyr crawl
+#' @export
 #'
 cu_add_argos_cols <- function(x){
   col_nms <- colnames(x)
@@ -143,10 +144,11 @@ cu_add_argos_cols <- function(x){
     x$ln.sd.x <- NA; x$ln.sd.y <- NA; x$error.corr <- 0
   }
   kf_ind <- !(is.na(x$ln.sd.x) | is.na(x$ln.sd.y) | is.na(x$error.corr))
-  x <- x %>% dplyr::mutate(
+  x <- x %>% 
+    dplyr::mutate(
     type = case_when(
-      type==type%in%c("Argos","argos","KF") & kf_ind ~ "Argos_kf",
-      type==type%in%c("Argos","argos","LS") & !kf_ind ~ "Argos_ls",
+      type %in% c("Argos","argos","KF") & kf_ind ~ "Argos_kf",
+      type %in% c("Argos","argos","LS") & !kf_ind ~ "Argos_ls",
       type %in% c("FastGPS","GPS","G","gps") ~ "FastGPS",
       TRUE ~ type
     ),
@@ -201,6 +203,7 @@ cu_add_argos_cols <- function(x){
 #' when substituting different values. Make sure you know what you're doing because it can be easily
 #' broken
 #' @import dplyr crawl sf progressr foreach doRNG
+#' @export
 #'
 cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
   p <- progressor(length(data_list))
