@@ -127,6 +127,7 @@ cu_location_rate <- function(x, time_name, time_unit="day", stat=mean, ...){
 #' For other types it is ignored.
 #' @author Devin S. Johnson
 #' @import dplyr crawl
+#' @export
 #'
 cu_add_argos_cols <- function(x){
   col_nms <- colnames(x)
@@ -143,10 +144,11 @@ cu_add_argos_cols <- function(x){
     x$ln.sd.x <- NA; x$ln.sd.y <- NA; x$error.corr <- 0
   }
   kf_ind <- !(is.na(x$ln.sd.x) | is.na(x$ln.sd.y) | is.na(x$error.corr))
-  x <- x %>% dplyr::mutate(
+  x <- x %>% 
+    dplyr::mutate(
     type = case_when(
-      type==type%in%c("Argos","argos","KF") & kf_ind ~ "Argos_kf",
-      type==type%in%c("Argos","argos","LS") & !kf_ind ~ "Argos_ls",
+      type %in% c("Argos","argos","KF") & kf_ind ~ "Argos_kf",
+      type %in% c("Argos","argos","LS") & !kf_ind ~ "Argos_ls",
       type %in% c("FastGPS","GPS","G","gps") ~ "FastGPS",
       TRUE ~ type
     ),
@@ -200,11 +202,12 @@ cu_add_argos_cols <- function(x){
 #' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
 #' when substituting different values. Make sure you know what you're doing because it can be easily
 #' broken
-#' @import dplyr crawl sf progressr foreach
+#' @import dplyr crawl sf progressr foreach doRNG
+#' @export
 #'
 cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
   p <- progressor(length(data_list))
-  fits <- foreach(i=1:length(data_list), .packages="sf") %dorng%{
+  fits <- foreach(i=1:length(data_list), .packages="sf") %dorng% {
     dat <- data_list[[i]] %>% dplyr::arrange(datetime)
     alsg <- all(dat$type%in%c("Argos_ls","FastGPS","known"))
     akfg <- all(dat$type%in%c("Argos_kf","FastGPS","known"))
@@ -268,7 +271,7 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
 #'
 cu_batch_predict <- function(fit_list, predTime, barrier=NULL, vis_graph=NULL){
   p <- progressor(length(fit_list))
-  plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"))%dorng%{
+  plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr")) %dorng% {
     pred <- crawl::crwPredict(fit_list[[i]], predTime=predTime, return.type="flat")
     if(!is.null(barrier) & !is.null(vis_graph)){
       if (!requireNamespace("pathroutr", quietly = TRUE)) stop("Please install pathroutr: install.packages('pathroutr',repos='https://jmlondon.r-universe.dev')")
