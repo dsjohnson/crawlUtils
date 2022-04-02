@@ -200,7 +200,7 @@ cu_add_argos_cols <- function(x){
 #' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
 #' when substituting different values. Make sure you know what you're doing because it can be easily
 #' broken
-#' @import dplyr crawl sf progressr foreach
+#' @import dplyr crawl sf progressr foreach doRNG
 #'
 cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
   p <- progressor(length(data_list))
