@@ -204,7 +204,7 @@ cu_add_argos_cols <- function(x){
 #'
 cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
   p <- progressor(length(data_list))
-  fits <- foreach(i=1:length(data_list), .packages="sf") %dorng%{
+  fits <- foreach(i=1:length(data_list), .packages="sf") doRNG::%dorng% {
     dat <- data_list[[i]] %>% dplyr::arrange(datetime)
     alsg <- all(dat$type%in%c("Argos_ls","FastGPS","known"))
     akfg <- all(dat$type%in%c("Argos_kf","FastGPS","known"))
@@ -268,7 +268,7 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
 #'
 cu_batch_predict <- function(fit_list, predTime, barrier=NULL, vis_graph=NULL){
   p <- progressor(length(fit_list))
-  plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"))%dorng%{
+  plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr")) doRNG::%dorng% {
     pred <- crawl::crwPredict(fit_list[[i]], predTime=predTime, return.type="flat")
     if(!is.null(barrier) & !is.null(vis_graph)){
       if (!requireNamespace("pathroutr", quietly = TRUE)) stop("Please install pathroutr: install.packages('pathroutr',repos='https://jmlondon.r-universe.dev')")
