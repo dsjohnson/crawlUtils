@@ -15,5 +15,5 @@ LazyData: true
 RoxygenNote: 7.1.2
 Imports: Rcpp (>= 1.0.8), fuzzyjoin, dplyr, lubridate, magrittr,
     sf, units, crawl, progressr, foreach, doRNG
-Suggests: pathroutr
+Suggests: pathroutr, ctmm
 LinkingTo: Rcpp
