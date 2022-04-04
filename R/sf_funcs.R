@@ -4,7 +4,7 @@
 #' @param bbox An \code{sf} bounding box. See \code{\link[sf:st_bbox]{sf::st_bbox}}.
 #' @param ef Expansion factor, must be positive
 #' @author Josh M. London
-#' @importsFrom sf st_bbox
+#' @importFrom sf st_bbox
 #' @export
 #'
 st_expand <- function(bbox, ef) {

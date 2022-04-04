@@ -23,9 +23,9 @@ cu_get_bouts <- function(x, gap=7, time_unit="day"){
 #' @title Join crawl prediction or simulation output with a table based on
 #' a time interval
 #' @description Takes a data set with a POSIX time column named 'datetime' and
-#' another data set with 'start' and 'end' columns representing time intervals and
+#' another data set with \code{start} and \code{end} columns representing time intervals and
 #' merges the two depending whether or not the 'datetime' column is within the interval  of the second.
-#' @param x A data frame with a column labeled 'datetime'
+#' @param x A data frame with a column labeled \code{datetime}
 #' @param int_tbl A data frame with 'start' and 'end' columns that form non-overlapping intervals as well as at least
 #' one other column with interval level data.
 #' @author Devin S. Johnson
@@ -54,6 +54,7 @@ cu_join_interval_tbl <- function(x, int_tbl){
 #' @export
 #'
 cu_location_rate <- function(x, time_name, time_unit="day", stat=mean, ...){
+  stop("This function is currently broken!")
   out <- table(lubridate::round_date(x[,time_name], time_unit))
   return(stat(out,...))
 }

@@ -8,14 +8,14 @@ a time interval}
 cu_join_interval_tbl(x, int_tbl)
 }
 \arguments{
-\item{x}{A data frame with a column labeled 'datetime'}
+\item{x}{A data frame with a column labeled \code{datetime}}
 
 \item{int_tbl}{A data frame with 'start' and 'end' columns that form non-overlapping intervals as well as at least
 one other column with interval level data.}
 }
 \description{
 Takes a data set with a POSIX time column named 'datetime' and
-another data set with 'start' and 'end' columns representing time intervals and
+another data set with \code{start} and \code{end} columns representing time intervals and
 merges the two depending whether or not the 'datetime' column is within the interval  of the second.
 }
 \author{
