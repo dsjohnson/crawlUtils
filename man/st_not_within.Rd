@@ -11,14 +11,14 @@ st_not_within(x, y, sparse = TRUE, prepared = TRUE, ...)
 
 \item{y}{object of class sf, sfc or sfg; if missing, x is used}
 
-\item{sparse}{ogical; should a sparse index list be returned (TRUE) or a dense logical matrix? See \link{pkg:sf}{st_within}.}
+\item{sparse}{ogical; should a sparse index list be returned (TRUE) or a dense logical matrix? See \link[sf:st_within]{sf::st_within}.}
 
-\item{prepared}{ogical; prepare geometry for x, before looping over y? See \link{pkg:sf}{st_within}.}
+\item{prepared}{ogical; prepare geometry for x, before looping over y? See \link[sf:st_within]{sf::st_within}.}
 
 \item{...}{passed on to s2_options}
 }
 \description{
 Predicate function to use with \code{st_filter} such that
 such that elemets of one spatial object are selected if
-they are not contained at all in the other. See \link{pkg:sf}{st_within}
+they are not contained at all in the other. See \code{\link[sf:st_within]{sf::st_within}}
 }

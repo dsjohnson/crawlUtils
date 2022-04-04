@@ -1,11 +1,11 @@
 #' @title Predicate function for st_filter
 #' @description Predicate function to use with \code{st_filter} such that
 #' such that elemets of one spatial object are selected if
-#' they are not contained at all in the other. See \link{pkg:sf}{st_within}
+#' they are not contained at all in the other. See \code{\link[sf:st_within]{sf::st_within}}
 #' @param x object of class sf, sfc or sfg
 #' @param y object of class sf, sfc or sfg; if missing, x is used
-#' @param sparse ogical; should a sparse index list be returned (TRUE) or a dense logical matrix? See \link{pkg:sf}{st_within}.
-#' @param prepared ogical; prepare geometry for x, before looping over y? See \link{pkg:sf}{st_within}.
+#' @param sparse ogical; should a sparse index list be returned (TRUE) or a dense logical matrix? See \link[sf:st_within]{sf::st_within}.
+#' @param prepared ogical; prepare geometry for x, before looping over y? See \link[sf:st_within]{sf::st_within}.
 #' @param ... passed on to s2_options
 #' @import sf
 #' @export
@@ -63,6 +63,7 @@ st_not_within <- function(x,y,sparse=TRUE,prepared=TRUE,...){
 #' @export
 #'
 cu_get_bouts <- function(x, gap=7, time_unit="day"){
+  . <- NULL #handle 'no visible binding...'
   dt <- diff(x) %>% `units<-`(time_unit)
   time_diff <- c(0, dt)
   bout_id <- (time_diff >= gap) %>% {cumsum(.)+1}
@@ -83,7 +84,7 @@ cu_get_bouts <- function(x, gap=7, time_unit="day"){
 #' @export
 #'
 cu_join_interval_tbl <- function(x, int_tbl){
-  x <- fuzzyjoin::fuzzy_left_join(x,seg_tbl,
+  x <- fuzzyjoin::fuzzy_left_join(x,int_tbl,
                                   by=c(datetime="start",datetime="end"),
                                   match_fun = list(`>=`, `<=`)
   )
@@ -130,6 +131,7 @@ cu_location_rate <- function(x, time_name, time_unit="day", stat=mean, ...){
 #' @export
 #'
 cu_add_argos_cols <- function(x){
+  error.corr <- quality <- NULL #handle 'no visible binding...'
   col_nms <- colnames(x)
   if('error_semi_major_axis' %in% col_nms &
      'error_semi_minor_axis' %in% col_nms &
@@ -144,7 +146,7 @@ cu_add_argos_cols <- function(x){
     x$ln.sd.x <- NA; x$ln.sd.y <- NA; x$error.corr <- 0
   }
   kf_ind <- !(is.na(x$ln.sd.x) | is.na(x$ln.sd.y) | is.na(x$error.corr))
-  x <- x %>% 
+  x <- x %>%
     dplyr::mutate(
     type = case_when(
       type %in% c("Argos","argos","KF") & kf_ind ~ "Argos_kf",
@@ -182,7 +184,7 @@ cu_add_argos_cols <- function(x){
       type=="Argos_ls" & quality %in% c("1","0","A","B") ~ log(1500),
       TRUE ~ ln.sd.y
     ),
-    error.corr = ifelse(is.na(error.corr), 0, error.corr),
+    error.corr = ifelse(is.na(.data$error.corr), 0, .data$error.corr),
     gq5 = ifelse(quality %in% c("4","5"), 1, 0),
     gq4 = ifelse(quality=="4", 1, 0),
     aq0 = ifelse(quality %in% c("0","A","B"), 1, 0),
@@ -206,6 +208,7 @@ cu_add_argos_cols <- function(x){
 #' @export
 #'
 cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
+  i <- datetime <- type <- const <- NULL #handle 'no visible binding...'
   p <- progressor(length(data_list))
   fits <- foreach(i=1:length(data_list), .packages="sf") %dorng% {
     dat <- data_list[[i]] %>% dplyr::arrange(datetime)
@@ -283,6 +286,7 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
 #' @import sf dplyr progressr foreach crawl
 #'
 cu_batch_predict <- function(fit_list, predTime, barrier=NULL, vis_graph=NULL){
+  i <- NULL #handle 'no visible binding...'
   p <- progressor(length(fit_list))
   plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr")) %dorng% {
     pred <- crawl::crwPredict(fit_list[[i]], predTime=predTime, return.type="flat")
@@ -320,6 +324,7 @@ cu_batch_predict <- function(fit_list, predTime, barrier=NULL, vis_graph=NULL){
 #' @import sf dplyr progressr foreach crawl
 #'
 cu_crw_sample <- function(size=8, fit_list, predTime, barrier=NULL, vis_graph=NULL){
+  i <- j <- NULL #handle 'no visible binding...'
   p <- progressor(length(fit_list))
   slist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"))%dorng%{
     simObj <- crawl::crwSimulator(fit_list[[i]], parIS = 0, predTime=predTime)
@@ -350,7 +355,7 @@ cu_crw_sample <- function(size=8, fit_list, predTime, barrier=NULL, vis_graph=NU
 #' @param barrier An sf polygon object that defines an area where use is excluded.
 #' @param norm Logical. Should each individual kernel be normalized to account for barriers
 #' before addition to the total KDE. Defaults to \code{TRUE} if a barrier is specified.
-#' @param ... Any arguments passed to \code{sf::st_make_grid} to create the KDE prediction grid. See \link{pkg:sf}{st_make_grid} for
+#' @param ... Any arguments passed to \code{sf::st_make_grid} to create the KDE prediction grid. See \link[sf:st_make_grid]{sf::st_make_grid} for
 #' description of additional arguments to make the KDE grid.
 #' @import sf
 #' @useDynLib crawlUtils, .registration = TRUE

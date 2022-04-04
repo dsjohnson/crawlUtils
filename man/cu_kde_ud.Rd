@@ -14,7 +14,7 @@ cu_kde_ud(x, barrier = NULL, norm, ...)
 \item{norm}{Logical. Should each individual kernel be normalized to account for barriers
 before addition to the total KDE. Defaults to \code{TRUE} if a barrier is specified.}
 
-\item{...}{Any arguments passed to \code{sf::st_make_grid} to create the KDE prediction grid. See \link{pkg:sf}{st_make_grid} for
+\item{...}{Any arguments passed to \code{sf::st_make_grid} to create the KDE prediction grid. See \link[sf:st_make_grid]{sf::st_make_grid} for
 description of additional arguments to make the KDE grid.}
 }
 \description{
