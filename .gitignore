@@ -4,3 +4,5 @@
 .Ruserdata
 crawlUtils.Rproj
 .DS_Store
+*.so
+*.o
