@@ -1,5 +1,31 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+#Installation
+
+## R-Universe
+
+### Binary
+
+``` r
+install.packages('crawlUtils', repos='https://dsjohnson.r-universe.dev')
+```
+
+### Source
+
+*You will need a C++ compiler for R*
+
+``` r
+install.packages('crawlUtils', type='source', repos='https://dsjohnson.r-universe.dev')
+```
+
+## github
+
+*You will need a C++ compiler for R*
+
+``` r
+remotes::install_github('dsjohnson/crawlUtils')
+```
+
 # Disclaimer
 
 *This software package is developed and maintained by scientists at the

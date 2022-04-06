@@ -14,6 +14,33 @@ knitr::opts_chunk$set(
 )
 ```
 
+#Installation
+
+## R-Universe
+
+### Binary
+
+```{r, eval=FALSE}
+install.packages('crawlUtils', repos='https://dsjohnson.r-universe.dev')
+```
+
+### Source
+
+*You will need a C++ compiler for R*
+
+```{r, eval=FALSE}
+install.packages('crawlUtils', type='source', repos='https://dsjohnson.r-universe.dev')
+```
+
+## github
+
+*You will need a C++ compiler for R*
+
+```{r, eval=FALSE}
+remotes::install_github('dsjohnson/crawlUtils')
+```
+
+
 
 # Disclaimer
 
