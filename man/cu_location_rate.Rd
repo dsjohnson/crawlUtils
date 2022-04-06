@@ -7,7 +7,7 @@
 cu_location_rate(x, time_name, time_unit = "day", stat = mean, ...)
 }
 \arguments{
-\item{x}{data set containing time of lcoations.}
+\item{x}{data set containing time of locations.}
 
 \item{time_name}{Character name of the POSIX time column when locations are
 observed.}

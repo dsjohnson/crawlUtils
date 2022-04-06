@@ -43,7 +43,7 @@ cu_join_interval_tbl <- function(x, int_tbl){
 #' @title Location rate statistics
 #' @description Calculate location rate statistics such as mean location rate per
 #' day or maximum number of locations per day for a telemetry
-#' @param x data set containing time of lcoations.
+#' @param x data set containing time of locations.
 #' @param time_name Character name of the POSIX time column when locations are
 #' observed.
 #' @param time_unit Time unit of the location summary. Defaults to \code{"day"}.
