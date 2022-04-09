@@ -7,7 +7,7 @@
 #' @importFrom utils download.file unzip
 #' @export
 #'
-download_osm <- function(force = FALSE) {
+cu_download_osm <- function(force = FALSE) {
   dir <- file.path(system.file(package="crawlUtils"), "inst", "osm")
   if(file.exists(file.path(dir,"land-polygons-complete-4326", "land_polygons.shp")) & !force) {
     stop("OSM data has already been downloaded. Use 'force=TRUE' to update.")
@@ -28,8 +28,8 @@ download_osm <- function(force = FALSE) {
 
 #' @title Get A Coastline \code{sf} Polygon Object For Plotting and Mapping
 #' @description Uses downloaded OSM data for constructing an \code{sf} polygon coastline data object.
-#' Prior to using this function you must run \code{crawlUtils::download_osm()}.
-#' See \code{\link[crawlUtils:download_osm]{crawlUtils::download_osm}}.
+#' Prior to using this function you must run \code{crawlUtils::cu_download_osm()}.
+#' See \code{\link[crawlUtils:cu_download_osm]{crawlUtils::cu_download_osm}}.
 #' @param x An \code{sf} spatial object. The coastline will be cropped to the bounding box.
 #' @param keep The amount of data retained after simplification with \code{\link[rmapshaper:ms_simplify]{rmapshaper::ms_simplify}}
 #' @author Josh M. London and Devin S. Johnson
@@ -37,7 +37,7 @@ download_osm <- function(force = FALSE) {
 #' @importFrom rmapshaper ms_simplify
 #' @export
 #'
-get_osm_coast <- function(x, keep=0.2) {
+cu_osm_coast <- function(x, keep=0.2) {
   osm_SHP_file <- file.path(system.file(package="crawlUtils"), "inst", "osm","land-polygons-complete-4326","land_polygons.shp")
   if(!file.exists(osm_SHP_file)) stop("OSM data has not been previously downloaded.\nSee ?crawlUtils::download_osm")
   message("This can take a while... maybe grab some coffee?")

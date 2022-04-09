@@ -9,7 +9,6 @@ x <- st_union(x)
 
 download_osm()
 
-st <- Sys.time()
 land <- get_osm_coast(x)
-Sys.time()-st
+
 

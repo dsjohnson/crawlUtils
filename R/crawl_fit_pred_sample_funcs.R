@@ -31,7 +31,7 @@ cu_add_argos_cols <- function(x){
                  x$error_ellipse_orientation)
     )
   } else{
-    x$ln.sd.x <- NA; x$ln.sd.y <- NA; x$error.corr <- 0
+    x$ln.sd.x <- NA_real_; x$ln.sd.y <- NA_real_; x$error.corr <- 0
   }
   kf_ind <- !(is.na(x$ln.sd.x) | is.na(x$ln.sd.y) | is.na(x$error.corr))
   x <- x %>%

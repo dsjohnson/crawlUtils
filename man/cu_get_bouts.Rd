@@ -4,7 +4,7 @@
 \alias{cu_get_bouts}
 \title{Label telemetry bout segments}
 \usage{
-cu_get_bouts(x, gap = 7, time_unit = "day")
+cu_get_bouts(x, gap = 7, time_unit = "days")
 }
 \arguments{
 \item{x}{column of POSIX times for which locations are observed.}
