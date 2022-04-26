@@ -13,8 +13,8 @@ cu_osm_coast(x, keep = 0.2)
 }
 \description{
 Uses downloaded OSM data for constructing an \code{sf} polygon coastline data object.
-Prior to using this function you must run \code{crawlUtils::download_osm()}.
-See \code{\link[crawlUtils:cu_download_osm]{crawlUtils::download_osm}}.
+Prior to using this function you must run \code{crawlUtils::cu_download_osm()}.
+See \code{\link[crawlUtils:cu_download_osm]{crawlUtils::cu_download_osm}}.
 }
 \author{
 Josh M. London and Devin S. Johnson
