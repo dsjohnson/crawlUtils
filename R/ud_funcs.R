@@ -41,7 +41,7 @@ cu_kde_ud <- function(x, barrier=NULL, norm, ...){
 #'@author Devin S. Johnson
 #'
 cu_crw_covfun <- function(x){
-  if(x$mov.model != ~1) stop("Currently, this function only works with 'mov.model = ~1'")
+  if((x$mov.model != ~1) | (x$random.drift==TRUE) | (!is.null(x$activity))) stop("Sorry, currently this function only works with the base CRW model")
   par <- tail(x$par,2)
   b <- exp(par[2])
   sig2 <- exp(2*par[1])
@@ -95,7 +95,10 @@ cu_crw_covmat <- function(x, corr=TRUE, cf, E=0){
 #' @title Calculate Effective Sample Size for a Set of CRW locations
 #' @description Estimates the number of independent locations in a CRW data set
 #' using the method of Acosta and Vallejos (2018) [AV18].
-#' @param x A \code{crwFit} object (See \code{\link[crawl]{crwMLE}}).
+#' @param fit A \code{crwFit} object (See \code{\link[crawl]{crwMLE}}).
+#' @param aug Either a \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} objects
+#' from which the extra \code{predTime} location times will be used in the calculation.
+#' The \code{\link[crawl]{crw_as_sf}} transformed versions of these objects will also work.
 #' @details The AV18 method was designed for spatial regression analysis, but
 #' the derivations only use a general correlation matrix. Therefore, the time-series
 #' correlation matrix of the CRW (IOU) process was substituted. However, there is one
@@ -110,8 +113,146 @@ cu_crw_covmat <- function(x, corr=TRUE, cf, E=0){
 #' @author Devin S. Johnson
 #' @export
 #'
-cu_crw_ess <- function(x){
-  R <- cu_crw_covmat(x)
-  n <- 1 + sum(solve(R, rep(1,nrow(x$data)-1)))
-  return(n)
+cu_crw_ess <- function(fit, aug=NULL){
+  df <- fit$data
+  v <- diag(var(df[,fit$coord]))
+  df <- fit$data[!duplicated(fit$data$TimeNum),]
+  if(is.null(aug)){
+    n <- nrow(df)
+    R <- cu_crw_covmat(fit, corr=FALSE)
+    Sx <- matrix(v[1],n,n)
+    Sx[2:n,2:n] <- Sx[2:n,2:n] + R
+    Sx <- cov2cor(Sx)
+    Sy <- matrix(v[2],n,n)
+    Sy[2:n,2:n] <- Sy[2:n,2:n] + R
+    Sy <- cov2cor(Sy)
+  } else{
+    if(!"TimeNum"%in%colnames(aug)) stop("The 'aug' argument is not the correct class. See ?cu_crw_ess.")
+    cf <- cu_crw_covfun(fit)
+    first_obs <- df$TimeNum[1]==aug$TimeNum[1]
+    if(!first_obs){
+      times <- c(df$TimeNum[1],aug$TimeNum)
+    } else{
+      times <- aug$TimeNum
+    }
+    n <- length(times)
+    R <- cu_crw_covmat(times[-1], corr=FALSE, cf=cf, E=times[1])
+
+    Sx <- matrix(v[1],n,n)
+    Sx[2:n,2:n] <- Sx[2:n,2:n] + R
+    Sy <- matrix(v[2],n,n)
+    Sy[2:n,2:n] <- Sy[2:n,2:n] + R
+    if(!first_obs){
+      Sx <- Sx[-1,-1]
+      Sy <- Sy[-1,-1]
+    }
+    Sx <- cov2cor(Sx)
+    Sy <- cov2cor(Sy)
+  }
+  ess <- (sum(solve(Sx,rep(1,nrow(Sx)))) + sum(solve(Sy,rep(1,nrow(Sy)))))/2
+  return(ess)
 }
+
+#' @title Kernel density estimator
+#' @description Calculates a Gaussian KDE for \code{crawl} simulations and predictions.
+#' @param pts A \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} object, or
+#' their 'sf' versions (See \link[crawl]{crw_as_sf}).
+#' @param grid An \code{\link[sf]{sf}} data frame containing the desired grid location for UD estimation.
+#' @param kern Type of covariance matrix for the Gaussian kernels.
+#' @param ess Effective sample size.
+#' @param norm Logical. Should each individual kernel be normalized to
+#' sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}
+#' @param B Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
+#' sample size calculation is used for a plugin 2d Gaussian kernel.
+#' @author Devin S. Johnson
+#' @import sf crawl
+#' @export
+#'
+cu_kern_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
+  gorig <- NULL
+  if(inherits(grid,"sf")){
+    gorig <- grid
+    grid <- st_geometry(gorig)
+  }
+  if(inherits(grid,"sfc_POLYGON")){
+    grid <- sf::st_centroid(grid)
+  }
+  if(!inherits(grid,"sfc_POINT")){
+    stop("The 'grid' argument must be either 'sfc_POLYGON', 'sfc_POINT', or 'sf' data frame containing the previous geometry types.")
+  }
+  if(!kern%in%c("iso","diag","full")) stop("The 'kern' argument must be one of 'iso','diag',or 'full'")
+  if(inherits(pts,"crwPredict") | inherits(pts,"crwIS")){
+    pts <- crw_as_sf(pts, "POINT")
+  }
+  if(inherits(pts,"sf")){
+    if(! "TimeNum"%in%colnames(pts)) stop("It appears that 'pts' is not the correct class.")
+    if(inherits(pts,"sfc_LINESTRING")) stop("The locations in 'pts' must be of class 'sfc_POINT'")
+  }
+  if(st_crs(pts) != st_crs(grid)) stop("The 'pts' and 'grid' crs specifications do not match.")
+
+  xy_grid <- st_coordinates(grid)
+  xy_pts <- st_coordinates(pts)
+  if(!is.null(ess)){
+    if(inherits(ess, "crwFit")){
+      ess <- cu_crw_ess(ess, pts)
+    } else if(!is.numeric(ess)){
+      stop("The 'ess' argument must be either a 'crwFit' object or numeric if specified.")
+    }
+  }else{
+    ess <- nrow(pts)
+  }
+  if(is.null(B)){
+    if(kern == 'iso'){
+      B <- var(c(xy_pts[,1]-mean(xy_pts[,1]), xy_pts[,1]-mean(xy_pts[,1])))*diag(2)
+    } else if(kern=="diag"){
+      B <- diag(diag(var(xy_pts)))
+    } else{
+      B <- var(xy_pts)
+    }
+    B <- (ess^(-1/3))*B
+  }
+  ud <- kde_estimate(grid=xy_grid, points=xy_pts, B=solve(B), norm = norm)
+  if(!is.null(gorig)){
+    gorig$ud <- ud
+  } else{
+    gorig <- st_as_sf(grid)
+    gorig$ud <- ud
+  }
+  return(gorig)
+}
+
+
+#' @title Create a grid for kernel density estimation of animal UDs
+#' @description A \code{sf} data frame is created with polygon grid cells to evaluate a Gaussian
+#' KDE at the centroids
+#' @param bb An \code{sf} bounding box or something that can be coerced into a
+#' bounding box via \code{\link[sf]{st_bbox}} function.
+#' @param barrier \code{sf} or \code{sfc} polygon data which represents areas for
+#' which the animal cannot travel. Use will only be calculated on the outside of
+#' each polygon in \code{barrier}.
+#' @param ... Additional arguments passed to \code{\link[sf]{st_make_grid}} which
+#' is used to construct the base grid.
+#' @author Devin S. Johnson
+#' @import sf
+#' @importFrom nngeo st_remove_holes
+#' @export
+#'
+cu_ud_grid <- function(bb, barrier=NULL,...){
+  geom <- NULL
+  grid <- st_make_grid(bb, ...) %>% st_as_sf() %>%
+    st_difference(barrier) %>% nngeo::st_remove_holes()
+  mgrid <- filter(grid, st_is(geom,"MULTIPOLYGON")) %>% st_cast("POLYGON")
+  grid <- filter(grid, st_is(geom,"POLYGON")) %>% bind_rows(mgrid)
+  grid$cell <- 1:nrow(grid)
+  grid$area <- st_area(grid)
+  return(grid)
+}
+
+
+
+
+
+
+
+
+

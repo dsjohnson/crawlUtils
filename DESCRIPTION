@@ -1,8 +1,8 @@
 Package: crawlUtils
 Type: Package
 Title: Enhance And Integrate the {crawl} Package For Spatial Analysis Of Telemetry Output
-Version: 0.1.04
-Date: 2022-04-25
+Version: 0.1.05
+Date: 2022-04-29
 Author: Devin S. Johnson
 Maintainer: Devin S. Johnson <devin.johnson@noaa.gov>
 Description: Utility functions to augment the the {crawl} package and integrate
@@ -14,6 +14,6 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
 Imports: Rcpp (>= 1.0.8), fuzzyjoin, dplyr, lubridate, magrittr,
-    sf, crawl, progressr, foreach, doRNG, rmapshaper
+    sf, crawl, progressr, foreach, doRNG, rmapshaper, nngeo
 Suggests: pathroutr, ctmm
 LinkingTo: Rcpp

@@ -32,7 +32,7 @@ NumericVector kde_estimate(NumericMatrix grid,
       tmp(i) = exp(-0.5*( d(0)*d(0)*B(0,0) + 2*d(0)*d(1)*B(0,1) + d(1)*d(1)*B(1,1) ));
     }
     if(norm) tmp = tmp/sum(tmp);
-    out += d;
+    out += tmp;
     checkUserInterrupt();
   }
   out = out/sum(out);

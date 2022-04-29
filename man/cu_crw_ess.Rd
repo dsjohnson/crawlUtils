@@ -4,10 +4,14 @@
 \alias{cu_crw_ess}
 \title{Calculate Effective Sample Size for a Set of CRW locations}
 \usage{
-cu_crw_ess(x)
+cu_crw_ess(fit, aug = NULL)
 }
 \arguments{
-\item{x}{A \code{crwFit} object (See \code{\link[crawl]{crwMLE}}).}
+\item{fit}{A \code{crwFit} object (See \code{\link[crawl]{crwMLE}}).}
+
+\item{aug}{Either a \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} objects
+from which the extra \code{predTime} location times will be used in the calculation.
+The \code{\link[crawl]{crw_as_sf}} transformed versions of these objects will also work.}
 }
 \description{
 Estimates the number of independent locations in a CRW data set
