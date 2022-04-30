@@ -38,3 +38,31 @@ st_expand <- function(bbox, ef) {
 st_not_within <- function(x,y,sparse=TRUE,prepared=TRUE,...){
   !sf::st_within(x,y,sparse,prepared,...)
 }
+
+#' @title Calculate cellsize value for hexagon grid
+#' @description Calculates the appropriate \code{cellsize} argument for making
+#' a hexagon grid with \code{\link[sf]{st_make_grid}}.
+#' @param area A value (m^2) for the resulting area of a full hexagon cell
+#' @param radius The value for the distance (m) from the centroids to the edge of full hexagon cells.
+#' @param sep The distance (m) between centoids of the hexagon grid.
+#' @author Devin S. Johnson
+#' @references See \url{https://github.com/r-spatial/sf/issues/1505}
+#' @importFrom units set_units
+#' @export
+#'
+hex_size <- function(area=NULL, radius=NULL, sep=NULL){
+
+  if(!is.null(area)){
+    area <- units::set_units(area, "m^2")
+    return(as.numeric(2 * sqrt(area/((3*sqrt(3)/2))) * sqrt(3)/2))
+  }
+  if(!is.null(radius)){
+    radius <- units::set_units(radius, "m")
+    return(as.numeric(2*radius/sqrt(3)))
+  }
+  if(!is.null(sep)){
+    sep <- units::set_units(sep, "m")
+    return(as.numeric(sep/sqrt(3)))
+  }
+  stop("Argument not specified.")
+}

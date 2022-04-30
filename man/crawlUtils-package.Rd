@@ -14,7 +14,7 @@ for ease of model fitting and track prediction, notably in marine environments.
 Package: \tab crawlUtils\cr
 Type: \tab Package\cr
 Version: \tab 0.1.05\cr
-Date: \tab April 26, 2022\cr
+Date: \tab April 29, 2022\cr
 License: \tab CC0 \cr
 LazyLoad: \tab yes\cr
 }

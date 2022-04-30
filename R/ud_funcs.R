@@ -218,6 +218,7 @@ cu_kern_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
     gorig <- st_as_sf(grid)
     gorig$ud <- ud
   }
+  class(gorig) <- c(class(gorig), "ud_df")
   return(gorig)
 }
 
@@ -235,19 +236,40 @@ cu_kern_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
 #' @author Devin S. Johnson
 #' @import sf
 #' @importFrom nngeo st_remove_holes
+#' @importFrom units set_units
 #' @export
 #'
 cu_ud_grid <- function(bb, barrier=NULL,...){
   geom <- NULL
+  if(!inherits(bb, "bbox")) bb <- st_bbox(bb)
   grid <- st_make_grid(bb, ...) %>% st_as_sf() %>%
     st_difference(barrier) %>% nngeo::st_remove_holes()
   mgrid <- filter(grid, st_is(geom,"MULTIPOLYGON")) %>% st_cast("POLYGON")
   grid <- filter(grid, st_is(geom,"POLYGON")) %>% bind_rows(mgrid)
   grid$cell <- 1:nrow(grid)
   grid$area <- st_area(grid)
+  if(max(grid$area)>units::set_units(1e+06,"m^2")) grid$area <- units::set_units(grid$area, "km^2")
   return(grid)
 }
 
+
+#' @title Highest utilization density
+#' @description The lowest 1-alpha percent of a utilization distribution is removed
+#' to give a highest alpha\% UD which can be used as a home range estimate, or just
+#' reduce spatial extent of UDs for a animal with a small spatial scale of use relative to the study area
+#' @param ud A \code{ud_df} object output from \code{\link{cu_kern_ud}}.
+#' @param alpha The percent cutoff for the highest utilization probability cells. Defaults to \code{alpha = 0.9}.
+#' @author Devin S. Johnson
+#' @export
+cu_hud <- function(ud, alpha=0.9){
+  if(!inherits(ud, "ud_df")) stop("The 'ud' argument must be a 'ud_df' object from the 'cu_kern_ud()' function.")
+  if(zapsmall(sum(ud$ud))!=1) stop("UD values must be normalized to find HUD!")
+  ud <- ud[order(ud$ud, decreasing=TRUE),]
+  val <- cumsum(ud$ud)
+  ud <- ud[val<=alpha,]
+  ud <- ud[order(ud$cell),]
+  return(ud)
+}
 
 
 

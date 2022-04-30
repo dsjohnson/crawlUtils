@@ -14,6 +14,6 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
 Imports: Rcpp (>= 1.0.8), fuzzyjoin, dplyr, lubridate, magrittr,
-    sf, crawl, progressr, foreach, doRNG, rmapshaper, nngeo
+    sf, crawl, progressr, foreach, doRNG, rmapshaper, nngeo, units
 Suggests: pathroutr, ctmm
 LinkingTo: Rcpp
