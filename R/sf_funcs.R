@@ -23,9 +23,41 @@ st_expand <- function(bbox, ef) {
 }
 
 
+#' @title \code{sf::st_bbox} for a list of \code{sf} or \code{sfc} objects.
+#'@param x A list of \code{sf} or \code{sfc} objects.
+#'@param union Logical. Should the bounding box of the union be returned instead of
+#'a list of bounding boxes.
+#'@param as_sfc Logical. Should the bounding box (boxes) be returned as \code{sfc} objects.
+#'@importFrom sf st_bbox st_as_sfc
+#'@export
+#'@author Devin S. Johnson
+#'
+st_bbox_list <- function(x, union=TRUE, as_sfc=FALSE){
+  out <- lapply(x, st_bbox)
+  if(union){
+    out <- lapply(out, st_as_sfc)
+    out <- st_union_list(out)
+    out <- st_bbox(out)
+    if(as_sfc) out <- st_as_sfc(out)
+  } else{
+    if(as_sfc) out <- lapply(out, st_as_sfc)
+  }
+  return(out)
+}
+
+#'@title  \code{sf::st_union} for a list of \code{sf} or \code{sfc} objects.
+#'@param x A list of \code{sf} or \code{sfc} objects.
+#'@importFrom sf st_union
+#'@export
+#'@author Devin S. Johnson
+#'
+st_union_list <- function(x){
+  return(st_union(do.call(c, x)))
+}
+
 #' @title Predicate function for st_filter
 #' @description Predicate function to use with \code{st_filter} such that
-#' such that elemets of one spatial object are selected if
+#' such that elements of one spatial object are selected if
 #' they are not contained at all in the other. See \code{\link[sf:st_within]{sf::st_within}}
 #' @param x object of class sf, sfc or sfg
 #' @param y object of class sf, sfc or sfg; if missing, x is used

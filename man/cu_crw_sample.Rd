@@ -4,7 +4,15 @@
 \alias{cu_crw_sample}
 \title{Batch CRW Posterior Path Simulation For Multiple Animals}
 \usage{
-cu_crw_sample(size = 8, fit_list, predTime, barrier = NULL, vis_graph = NULL)
+cu_crw_sample(
+  size = 8,
+  fit_list,
+  predTime = NULL,
+  barrier = NULL,
+  vis_graph = NULL,
+  as_sf = TRUE,
+  ...
+)
 }
 \arguments{
 \item{size}{The number of posterior draws. Defaults to 8 (See Details).}
@@ -18,6 +26,11 @@ e.g., \code{predTime="1 hour"} or \code{predTime="15 min"}.}
 
 \item{vis_graph}{A visibility graph constructed with the R package \code{pathroutr}, which is used
 to reroute paths around barriers.}
+
+\item{as_sf}{Logical. Return an \code{sf} points data frame list (\code{TRUE}) or standard \code{crawl} prediction list}
+
+\item{...}{Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
+for error handling in the loop.}
 }
 \description{
 Uses a list of CRW fitted models and desired simulation times

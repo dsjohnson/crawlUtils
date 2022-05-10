@@ -4,7 +4,7 @@
 \alias{cu_crw_argos}
 \title{Batch Fitting CTCRW Models for Argos (and FastGPS) Data}
 \usage{
-cu_crw_argos(data_list, bm = FALSE, fixPar = NULL)
+cu_crw_argos(data_list, bm = FALSE, fixPar = NULL, ...)
 }
 \arguments{
 \item{data_list}{A list of data sets}
@@ -14,6 +14,9 @@ cu_crw_argos(data_list, bm = FALSE, fixPar = NULL)
 \item{fixPar}{An alternative to the default set of fixed parameter values. Care should be taken
 when substituting different values. Make sure you know what you're doing because it can be easily
 broken}
+
+\item{...}{Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
+for error handling in the loop.}
 }
 \description{
 A basic CTCRW model is fitted to a list of data sets where each

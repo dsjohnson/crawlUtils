@@ -19,6 +19,6 @@ st_not_within(x, y, sparse = TRUE, prepared = TRUE, ...)
 }
 \description{
 Predicate function to use with \code{st_filter} such that
-such that elemets of one spatial object are selected if
+such that elements of one spatial object are selected if
 they are not contained at all in the other. See \code{\link[sf:st_within]{sf::st_within}}
 }

@@ -81,6 +81,7 @@ cu_crw_covmat <- function(x, corr=TRUE, cf, E=0){
   if(inherits(x, "crwFit")){
     foo <- cu_crw_covfun(x)
     E <- min(x$data$TimeNum)
+    times <-
     S <- outer(x$data$TimeNum[-1],x$data$TimeNum[-1], foo, E=E)
   } else {
     S <- outer(x,x,FUN=cf,E=E)
@@ -118,13 +119,15 @@ cu_crw_ess <- function(fit, aug=NULL){
   v <- diag(var(df[,fit$coord]))
   df <- fit$data[!duplicated(fit$data$TimeNum),]
   if(is.null(aug)){
-    n <- nrow(df)
-    R <- cu_crw_covmat(fit, corr=FALSE)
+    cf <- cu_crw_covfun(fit)
+    times <- df$TimeNum
+    n <- length(times)
+    R <- cu_crw_covmat(times[-1], corr=FALSE, cf=cf, E=times[1])
     Sx <- matrix(v[1],n,n)
     Sx[2:n,2:n] <- Sx[2:n,2:n] + R
-    Sx <- cov2cor(Sx)
     Sy <- matrix(v[2],n,n)
     Sy[2:n,2:n] <- Sy[2:n,2:n] + R
+    Sx <- cov2cor(Sx)
     Sy <- cov2cor(Sy)
   } else{
     if(!"TimeNum"%in%colnames(aug)) stop("The 'aug' argument is not the correct class. See ?cu_crw_ess.")
@@ -135,9 +138,9 @@ cu_crw_ess <- function(fit, aug=NULL){
     } else{
       times <- aug$TimeNum
     }
+    times <- times[!duplicated(times)]
     n <- length(times)
     R <- cu_crw_covmat(times[-1], corr=FALSE, cf=cf, E=times[1])
-
     Sx <- matrix(v[1],n,n)
     Sx[2:n,2:n] <- Sx[2:n,2:n] + R
     Sy <- matrix(v[2],n,n)
@@ -218,8 +221,38 @@ cu_kern_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
     gorig <- st_as_sf(grid)
     gorig$ud <- ud
   }
-  class(gorig) <- c(class(gorig), "ud_df")
+  attr(gorig,"is_ud") <- TRUE
   return(gorig)
+}
+
+#' @title Kernel density estimation for a posterior sample list
+#' @param smp_list A list of posterior track samples from \code{\link[crawl]{crwPostIS}} after
+#' transformation via \code{\link[crawl]{crw_as_sf}}.
+#' @param grid An \code{\link[sf]{sf}} data frame containing the desired grid location for UD estimation.
+#' @param kern Type of covariance matrix for the Gaussian kernels.
+#' @param ess Effective sample size.
+#' @param norm Logical. Should each individual kernel be normalized to
+#' sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}
+#' @param B Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
+#' sample size calculation is used for a plugin 2d Gaussian kernel.
+#' @author Devin S. Johnson
+#' @import dplyr sf
+#' @importFrom stats sd
+#' @export
+#'
+cu_kern_ud_sample <- function(smp_list, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
+  cell <- ud <- ud_tmp <- NULL
+  ulist <- lapply(smp_list, cu_kern_ud, grid=grid, kern=kern, ess=ess, norm=norm, B=B)
+  geom <- st_geometry(ulist[[1]])
+  ulist <- lapply(ulist, st_drop_geometry)
+  umat <- sapply(ulist, "[", ,"ud")
+  out <- ulist[[1]] %>% select(-ud)
+  out$ud <- rowMeans(umat)
+  out$se_ud <- apply(umat, 1, sd)
+  out <- cbind(geom, out) %>% st_as_sf()
+  attr(out, "is_ud") <- TRUE
+  attr(out, "is_ud_smp") <- TRUE
+  return(out)
 }
 
 
@@ -242,10 +275,12 @@ cu_kern_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
 cu_ud_grid <- function(bb, barrier=NULL,...){
   geom <- NULL
   if(!inherits(bb, "bbox")) bb <- st_bbox(bb)
-  grid <- st_make_grid(bb, ...) %>% st_as_sf() %>%
-    st_difference(barrier) %>% nngeo::st_remove_holes()
-  mgrid <- filter(grid, st_is(geom,"MULTIPOLYGON")) %>% st_cast("POLYGON")
-  grid <- filter(grid, st_is(geom,"POLYGON")) %>% bind_rows(mgrid)
+  grid <- st_make_grid(bb, ...) %>% st_as_sf()
+  if(!is.null(barrier)){
+    grid <- grid %>% st_difference(barrier) %>% nngeo::st_remove_holes()
+    mgrid <- filter(grid, st_is(geom,"MULTIPOLYGON")) %>% st_cast("POLYGON")
+    grid <- filter(grid, st_is(geom,"POLYGON")) %>% bind_rows(mgrid)
+  }
   grid$cell <- 1:nrow(grid)
   grid$area <- st_area(grid)
   if(max(grid$area)>units::set_units(1e+06,"m^2")) grid$area <- units::set_units(grid$area, "km^2")
@@ -262,7 +297,7 @@ cu_ud_grid <- function(bb, barrier=NULL,...){
 #' @author Devin S. Johnson
 #' @export
 cu_hud <- function(ud, alpha=0.9){
-  if(!inherits(ud, "ud_df")) stop("The 'ud' argument must be a 'ud_df' object from the 'cu_kern_ud()' function.")
+  if(is.null(attr(ud, "is_ud"))) stop("The 'ud' argument must be a UD object from the 'cu_kern_ud()' function.")
   if(zapsmall(sum(ud$ud))!=1) stop("UD values must be normalized to find HUD!")
   ud <- ud[order(ud$ud, decreasing=TRUE),]
   val <- cumsum(ud$ud)

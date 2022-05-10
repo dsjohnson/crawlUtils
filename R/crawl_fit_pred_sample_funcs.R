@@ -92,13 +92,14 @@ cu_add_argos_cols <- function(x){
 #' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
 #' when substituting different values. Make sure you know what you're doing because it can be easily
 #' broken
-#' @import dplyr crawl sf progressr foreach doRNG
+#' @param ... Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
+#' for error handling in the loop.
+#' @import dplyr crawl sf foreach
 #' @export
 #'
-cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
+cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL, ...){
   i <- datetime <- type <- const <- NULL #handle 'no visible binding...'
-  p <- progressor(length(data_list))
-  fits <- foreach(i=1:length(data_list), .packages="sf") %dorng% {
+  fits <- foreach(i=1:length(data_list), .packages="sf", ...) %do% {
     dat <- data_list[[i]] %>% dplyr::arrange(datetime)
     alsg <- all(dat$type%in%c("Argos_ls","FastGPS","known"))
     akfg <- all(dat$type%in%c("Argos_kf","FastGPS","known"))
@@ -148,7 +149,6 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
         control = list(maxit=2000), initialSANN = list(maxit=1500, temp=10),
         attempts=10, method = "L-BFGS-B")
     )
-    p()
     out
   }
   return(fits)
@@ -164,6 +164,9 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
 #' @param barrier An \code{sf} polygon object representing areas where the animal cannot access.
 #' @param vis_graph A visibility graph constructed with the R package \code{pathroutr}, which is used
 #' to reroute paths around barriers.
+#' @param as_sf Logical. Return an \code{sf} points data frame (\code{TRUE}) or standard \code{crawl} prediction.
+#' @param ... Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
+#' for error handling in the loop.
 #' @details The R package \code{pathroutr} is necessary for use of the \code{barrier} rerouting.
 #' it can be installed with the command
 #' \code{install.packages('pathroutr', repos='https://jmlondon.r-universe.dev')}.
@@ -171,21 +174,21 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL){
 #' viability \code{vis_graph}.
 #' @author Devin S. Johnson
 #' @export
-#' @import sf dplyr progressr foreach crawl
+#' @import sf dplyr crawl foreach
 #'
-cu_batch_predict <- function(fit_list, predTime, barrier=NULL, vis_graph=NULL){
+cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
   i <- NULL #handle 'no visible binding...'
-  p <- progressor(length(fit_list))
-  plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr")) %dorng% {
+  route <- !is.null(barrier) & !is.null(vis_graph)
+  plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"), ...) %do% {
     pred <- crawl::crwPredict(fit_list[[i]], predTime=predTime, return.type="flat")
-    if(!is.null(barrier) & !is.null(vis_graph)){
+    if(route){
       if (!requireNamespace("pathroutr", quietly = TRUE)) stop("Please install {pathroutr}: install.packages('pathroutr',repos='https://jmlondon.r-universe.dev')")
       pred <- pred %>% crawl::crw_as_sf(ftype="POINT", locType="p")
       pred <- pred %>% pathroutr::prt_trim(barrier)
       fix <- pathroutr::prt_reroute(pred, barrier, vis_graph, blend=FALSE)
       pred <- pathroutr::prt_update_points(fix, pred)
     }
-    p()
+    if(as_sf & !route) pred <- crw_as_sf(pred,ftype="POINT")
     pred
   }
   return(plist)
@@ -202,6 +205,9 @@ cu_batch_predict <- function(fit_list, predTime, barrier=NULL, vis_graph=NULL){
 #' @param barrier An \code{sf} polygon object representing areas where the animal cannot access.
 #' @param vis_graph A visibility graph constructed with the R package \code{pathroutr}, which is used
 #' to reroute paths around barriers.
+#' @param as_sf Logical. Return an \code{sf} points data frame list (\code{TRUE}) or standard \code{crawl} prediction list
+#' @param ... Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
+#' for error handling in the loop.
 #' @details The R package \code{pathroutr} is necessary for use of the \code{barrier} rerouting.
 #' it can be installed with the command
 #' \code{install.packages('pathroutr', repos='https://jmlondon.r-universe.dev')}.
@@ -209,25 +215,25 @@ cu_batch_predict <- function(fit_list, predTime, barrier=NULL, vis_graph=NULL){
 #' viability \code{vis_graph}.
 #' @author Devin S. Johnson
 #' @export
-#' @import sf dplyr progressr foreach crawl
+#' @import sf dplyr foreach crawl
 #'
-cu_crw_sample <- function(size=8, fit_list, predTime, barrier=NULL, vis_graph=NULL){
+cu_crw_sample <- function(size=8, fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
   i <- j <- NULL #handle 'no visible binding...'
-  p <- progressor(length(fit_list))
-  slist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"))%dorng%{
+  route <- !is.null(barrier) & !is.null(vis_graph)
+  slist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"),...)%do%{
     simObj <- crawl::crwSimulator(fit_list[[i]], parIS = 0, predTime=predTime)
     out <- foreach(j=1:size)%do%{
       samp <- crawl::crwPostIS(simObj, fullPost = FALSE)
-      if(!is.null(barrier) & !is.null(vis_graph)){
+      if(route){
         if (! requireNamespace("pathroutr", quietly = TRUE)) stop("Please install {pathroutr}: install.packages('pathroutr',repos='https://jmlondon.r-universe.dev')")
         samp <- samp %>% crawl::crw_as_sf(ftype="POINT", locType="p")
         samp <- samp %>% pathroutr::prt_trim(barrier)
         fix <- pathroutr::prt_reroute(samp, barrier, vis_graph, blend=FALSE)
         samp <- pathroutr::prt_update_points(fix, samp) %>% dplyr::mutate(rep=j)
       }
-      samp
+      if(as_sf & !route) samp <- crw_as_sf(samp,ftype="POINT") %>% dplyr::mutate(rep=j)
     }
-    p()
+    # if(as_sf) out <- do.call(rbind, out) %>% st_as_sf()
     out
   }
   return(slist)
