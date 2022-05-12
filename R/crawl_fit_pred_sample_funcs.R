@@ -177,13 +177,13 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL, ...){
 #' @import sf dplyr crawl foreach
 #'
 cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
-  i <- NULL #handle 'no visible binding...'
+  i <- locType <- NULL #handle 'no visible binding...'
   route <- !is.null(barrier) & !is.null(vis_graph)
   plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"), ...) %do% {
     pred <- crawl::crwPredict(fit_list[[i]], predTime=predTime, return.type="flat")
     if(route){
       if (!requireNamespace("pathroutr", quietly = TRUE)) stop("Please install {pathroutr}: install.packages('pathroutr',repos='https://jmlondon.r-universe.dev')")
-      pred <- pred %>% crawl::crw_as_sf(ftype="POINT", locType="p")
+      pred <- pred %>% crawl::crw_as_sf(ftype="POINT", locType="p") %>% filter(locType=="p")
       pred <- pred %>% pathroutr::prt_trim(barrier)
       fix <- pathroutr::prt_reroute(pred, barrier, vis_graph, blend=FALSE)
       pred <- pathroutr::prt_update_points(fix, pred)

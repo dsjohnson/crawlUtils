@@ -222,7 +222,8 @@ cu_kern_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
     gorig$ud <- ud
   }
   attr(gorig,"is_ud") <- TRUE
-  # attr(gorig, "grid_id") <- attr(grid, "grid_id")
+  attr(gorig, "ess") <- ess
+  attr(gorig, "B") <- B
   return(gorig)
 }
 
@@ -255,6 +256,8 @@ cu_kern_ud_sample <- function(smp_list, grid, kern="iso", ess=NULL, norm=TRUE, B
   attr(out, "is_ud") <- TRUE
   attr(out, "is_ud_smp") <- TRUE
   attr(out, "grid_id") <- attr(grid, "grid_id")
+  attr(out, "ess") <- attr(ulist[[1]], "ess")
+  attr(out, "B") <- attr(ulist[[1]], "B")
   return(out)
 }
 
@@ -271,6 +274,9 @@ cu_kern_ud_sample <- function(smp_list, grid, kern="iso", ess=NULL, norm=TRUE, B
 cu_avg_ud <- function(ud_list, fac=NULL, w=NULL){
   i <- NULL
   if(!is.null(fac) & length(fac)!=length(ud_list)) stop("The 'fac' variable is not the same length as 'ud_list'")
+  if(w=="ess"){
+    w <- sapply(ud_list, attr, which="ess")
+  }
   if(!is.null(w) & length(w)!=length(ud_list)) stop("The weights vector, 'w', is not the same length as 'ud_list'")
   if(is.null(w)) w <- rep(1, length(ud_list))
   if(any(w<0)) stop("There are w<0. All must be positive.")
