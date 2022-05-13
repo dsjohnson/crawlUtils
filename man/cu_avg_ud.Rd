@@ -8,7 +8,7 @@ cu_avg_ud(ud_list, fac = NULL, w = NULL)
 }
 \arguments{
 \item{ud_list}{A list of individual utilization distributions calculated via
-\code{\link[crawlUtils]{cu_kde_ud}} or \code{\link[crawlUtils]{cu_kern_ud_sample}}.
+\code{\link[crawlUtils]{cu_kde_ud}} or \code{\link[crawlUtils]{cu_kde_ud_sample}}.
 Each element of the list must have been calculated from the same grid created with
 \code{\link[crawlUtils]{cu_ud_grid}}.}
 

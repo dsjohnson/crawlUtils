@@ -2,26 +2,28 @@
 % Please edit documentation in R/ud_funcs.R
 \name{cu_kde_ud}
 \alias{cu_kde_ud}
-\title{Calculate Gaussian Kernel Utilization Distribution}
+\title{Kernel density estimator}
 \usage{
-cu_kde_ud(x, barrier = NULL, norm, ...)
+cu_kde_ud(pts, grid, kern = "iso", ess = NULL, norm = TRUE, B = NULL)
 }
 \arguments{
-\item{x}{an sf or sfc object. The KDE grid will be estimated from the bounding box.}
+\item{pts}{A \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} object, or
+their 'sf' versions (See \link[crawl]{crw_as_sf}).}
 
-\item{barrier}{An sf polygon object that defines an area where use is excluded.}
+\item{grid}{An \code{\link[sf]{sf}} data frame containing the desired grid location for UD estimation.}
 
-\item{norm}{Logical. Should each individual kernel be normalized to account for barriers
-before addition to the total KDE. Defaults to \code{TRUE} if a barrier is specified.}
+\item{kern}{Type of covariance matrix for the Gaussian kernels.}
 
-\item{...}{Any arguments passed to \code{sf::st_make_grid} to create the KDE prediction grid. See \link[sf:st_make_grid]{sf::st_make_grid} for
-description of additional arguments to make the KDE grid.}
+\item{ess}{Effective sample size.}
+
+\item{norm}{Logical. Should each individual kernel be normalized to
+sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}}
+
+\item{B}{Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
+sample size calculation is used for a plugin 2d Gaussian kernel.}
 }
 \description{
-Calculates a kernel density estimate using telemetry locations
-over a grid accounting for barriers by normalizing each kernel before addition
-to the overall sum. The final estimate will always be normalized to sum to one
-over the estimate grid.
+Calculates a Gaussian KDE for \code{crawl} simulations and predictions.
 }
 \author{
 Devin S. Johnson

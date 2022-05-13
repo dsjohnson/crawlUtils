@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 kde_estimate <- function(grid, points, B, norm = TRUE) {
-    .Call(`_crawlUtils_kde_estimate`, grid, points, B, norm)
+    .Call('_crawlUtils_kde_estimate', PACKAGE = 'crawlUtils', grid, points, B, norm)
 }
 

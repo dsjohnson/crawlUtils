@@ -7,7 +7,7 @@
 cu_hud(ud, alpha = 0.9)
 }
 \arguments{
-\item{ud}{A \code{ud_df} object output from \code{\link{cu_kern_ud}}.}
+\item{ud}{A \code{ud_df} object output from \code{\link{cu_kde_ud}}.}
 
 \item{alpha}{The percent cutoff for the highest utilization probability cells. Defaults to \code{alpha = 0.9}.}
 }

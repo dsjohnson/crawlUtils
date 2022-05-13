@@ -1,22 +1,3 @@
-#' @title Calculate Gaussian Kernel Utilization Distribution
-#' @description Calculates a kernel density estimate using telemetry locations
-#' over a grid accounting for barriers by normalizing each kernel before addition
-#' to the overall sum. The final estimate will always be normalized to sum to one
-#' over the estimate grid.
-#' @param x an sf or sfc object. The KDE grid will be estimated from the bounding box.
-#' @param barrier An sf polygon object that defines an area where use is excluded.
-#' @param norm Logical. Should each individual kernel be normalized to account for barriers
-#' before addition to the total KDE. Defaults to \code{TRUE} if a barrier is specified.
-#' @param ... Any arguments passed to \code{sf::st_make_grid} to create the KDE prediction grid. See \link[sf:st_make_grid]{sf::st_make_grid} for
-#' description of additional arguments to make the KDE grid.
-#' @import sf
-#' @useDynLib crawlUtils, .registration = TRUE
-#' @author Devin S. Johnson
-#' @export
-#'
-cu_kde_ud <- function(x, barrier=NULL, norm, ...){
-  grid <- sf::st_make_grid(x,...)
-}
 
 
 #' @title Create covariance function for a fitted CRW model object
@@ -171,7 +152,7 @@ cu_crw_ess <- function(fit, aug=NULL){
 #' @import sf crawl
 #' @export
 #'
-cu_kern_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
+cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
   gorig <- NULL
   if(inherits(grid,"sf")){
     gorig <- grid
@@ -242,9 +223,9 @@ cu_kern_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
 #' @importFrom stats sd
 #' @export
 #'
-cu_kern_ud_sample <- function(smp_list, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
+cu_kde_ud_sample <- function(smp_list, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
   cell <- ud <- ud_tmp <- NULL
-  ulist <- lapply(smp_list, cu_kern_ud, grid=grid, kern=kern, ess=ess, norm=norm, B=B)
+  ulist <- lapply(smp_list, cu_kde_ud, grid=grid, kern=kern, ess=ess, norm=norm, B=B)
   geom <- st_geometry(ulist[[1]])
   ulist <- lapply(ulist, st_drop_geometry)
   umat <- sapply(ulist, "[", ,"ud")
@@ -263,7 +244,7 @@ cu_kern_ud_sample <- function(smp_list, grid, kern="iso", ess=NULL, norm=TRUE, B
 
 #' @title Averaging Utilization Distributions
 #' @param ud_list A list of individual utilization distributions calculated via
-#' \code{\link[crawlUtils]{cu_kde_ud}} or \code{\link[crawlUtils]{cu_kern_ud_sample}}.
+#' \code{\link[crawlUtils]{cu_kde_ud}} or \code{\link[crawlUtils]{cu_kde_ud_sample}}.
 #' Each element of the list must have been calculated from the same grid created with
 #' \code{\link[crawlUtils]{cu_ud_grid}}.
 #' @param fac A factor variable. Averaging will be calculated for each level of \code{fac}.
@@ -365,12 +346,12 @@ cu_ud_grid <- function(bb, barrier=NULL,...){
 #' @description The lowest 1-alpha percent of a utilization distribution is removed
 #' to give a highest alpha\% UD which can be used as a home range estimate, or just
 #' reduce spatial extent of UDs for a animal with a small spatial scale of use relative to the study area
-#' @param ud A \code{ud_df} object output from \code{\link{cu_kern_ud}}.
+#' @param ud A \code{ud_df} object output from \code{\link{cu_kde_ud}}.
 #' @param alpha The percent cutoff for the highest utilization probability cells. Defaults to \code{alpha = 0.9}.
 #' @author Devin S. Johnson
 #' @export
 cu_hud <- function(ud, alpha=0.9){
-  if(is.null(attr(ud, "is_ud"))) stop("The 'ud' argument must be a UD object from the 'cu_kern_ud()' function.")
+  if(is.null(attr(ud, "is_ud"))) stop("The 'ud' argument must be a UD object from the 'cu_kde_ud()' function.")
   if(zapsmall(sum(ud$ud))!=1) stop("UD values must be normalized to find HUD!")
   ud <- ud[order(ud$ud, decreasing=TRUE),]
   val <- cumsum(ud$ud)
