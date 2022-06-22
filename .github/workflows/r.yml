@@ -45,15 +45,15 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@v1
-        with:
-          extra-packages: |
-            any::rcmdcheck 
-            any::remotes
-          
-      - name: Install pathroutr
+      - name: Install dependencies
         run: |
-          remotes::install_github("jmlondon/pathroutr")
+         install.package("remotes")
+         remotes::install_deps(dependencies = c("Depends", "Imports","LinkingTo") )
+         remotes::install_cran("rcmdcheck")
+         remotes::install_cran("devtools")
+         remotes::install_github("jmlondon/pathroutr")
+         remotes::install_cran("ctmm")
+         shell: Rscript {0}
         
       - uses: r-lib/actions/check-r-package@v1
 
