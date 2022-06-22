@@ -47,12 +47,15 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
-          extra-packages: rcmdcheck
-
+          extra-packages: |
+            any::rcmdcheck 
+            any::remotes
+          
+      - name: Install pathroutr
+        run: |
+          remotes::install_github("jmlondon/pathroutr")
+        
       - uses: r-lib/actions/check-r-package@v1
-        with:
-          env:
-            _R_CHECK_FORCE_SUGGESTS_: false
 
       - name: Show testthat output
         if: always()
