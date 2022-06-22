@@ -47,7 +47,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-         install.package("remotes")
          remotes::install_deps(dependencies = c("Depends", "Imports","LinkingTo") )
          remotes::install_cran("rcmdcheck")
          remotes::install_cran("devtools")
