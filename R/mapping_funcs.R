@@ -39,7 +39,7 @@ cu_download_osm <- function(force = FALSE) {
 #'
 cu_osm_coast <- function(x, keep=0.2) {
   osm_SHP_file <- file.path(system.file(package="crawlUtils"), "inst", "osm","land-polygons-complete-4326","land_polygons.shp")
-  if(!file.exists(osm_SHP_file)) stop("OSM data has not been previously downloaded.\nSee ?crawlUtils::download_osm")
+  if(!file.exists(osm_SHP_file)) stop("OSM data has not been previously downloaded.\nSee ?crawlUtils::cu_download_osm")
   message("This can take a while... maybe grab some coffee?")
   osm_land <- sf::read_sf(osm_SHP_file)
   x_bb <- x %>% st_convex_hull() %>% st_transform(4326) %>% st_bbox()
