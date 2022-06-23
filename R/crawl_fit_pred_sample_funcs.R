@@ -138,7 +138,7 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL, ...){
     if(bm){
       fixPar[length(fixPar)] <- log(-log(1.0e-4))
       constr$lower <- const$lower[-length(const$lower)]
-      constr$lower <- const$lower[-length(const$lower)]
+      constr$upper <- const$upper[-length(const$upper)]
       theta <- theta[-length(theta)]
     }
     # Fit ctcrw model
