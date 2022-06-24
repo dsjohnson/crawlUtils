@@ -133,12 +133,12 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL, ...){
         lower=c(-Inf, log(-log(1-1.0e-4))),
         upper=c(Inf, log(-log(1.0e-4)))
       )
-      theta <- c(9,.5)
+      theta <- c(9,log(-log(0.8)))
     }
     if(bm){
       fixPar[length(fixPar)] <- log(-log(1.0e-4))
-      constr$lower <- const$lower[-length(const$lower)]
-      constr$upper <- const$upper[-length(const$upper)]
+      constr$lower <- constr$lower[-length(constr$lower)]
+      constr$upper <- constr$upper[-length(constr$upper)]
       theta <- theta[-length(theta)]
     }
     # Fit ctcrw model
@@ -232,6 +232,7 @@ cu_crw_sample <- function(size=8, fit_list, predTime=NULL, barrier=NULL, vis_gra
         samp <- pathroutr::prt_update_points(fix, samp) %>% dplyr::mutate(rep=j)
       }
       if(as_sf & !route) samp <- crw_as_sf(samp,ftype="POINT") %>% dplyr::mutate(rep=j)
+      samp
     }
     # if(as_sf) out <- do.call(rbind, out) %>% st_as_sf()
     out

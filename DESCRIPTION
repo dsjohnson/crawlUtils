@@ -1,7 +1,7 @@
 Package: crawlUtils
 Type: Package
 Title: Enhance And Integrate the {crawl} Package For Spatial Analysis Of Telemetry Output
-Version: 0.1.01
+Version: 0.1.02
 Date: 2022-06-23
 Author: Devin S. Johnson
 Maintainer: Devin S. Johnson <devin.johnson@noaa.gov>
