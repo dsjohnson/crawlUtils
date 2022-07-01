@@ -77,7 +77,10 @@ cu_add_argos_cols <- function(x){
       gq4 = ifelse(quality=="4", 1, 0),
       aq0 = ifelse(quality %in% c("0","A","B"), 1, 0),
       aqA = ifelse(quality %in% c("A","B"), 1, 0),
-      aqB = ifelse(quality=="B", 1, 0)
+      aqB = ifelse(quality=="B", 1, 0),
+      error_area = pi*qchisq(0.95, 2)*exp(0.5*(ln.sd.x+ln.sd.y))*sqrt(1-error.corr^2),
+      error_area = ifelse(quality=="A", 1.1*error_area, error_area),
+      error_area = ifelse(quality=="B", 1.2*error_area, error_area)
     )
   return(x)
 }

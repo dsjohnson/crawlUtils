@@ -98,3 +98,18 @@ hex_size <- function(area=NULL, radius=NULL, sep=NULL){
   }
   stop("Argument not specified.")
 }
+
+
+#' @title Convert longitude/latitude coordinates from -180/180 to 0/360
+#' @description Converts sf data with EPSG = 4326 from -180/180 specification to
+#' 0/360 for plotting with the mapview package etc.
+#' @param x An sf data frame with EPSG=4326.
+#' @export
+#' @import sf
+#' @author Josh London
+st_to_360 <- function(x){
+  if(!st_crs(x)$epsg==4326) stop("This funtion is only applicable for data with EPSG=4326!")
+  coords <- (sf::st_geometry(x) + c(360,90)) %% c(360) - c(0,90)
+  x <- sf::st_set_geometry(x,coords) %>% sf::st_set_crs(4326)
+  return(x)
+}
