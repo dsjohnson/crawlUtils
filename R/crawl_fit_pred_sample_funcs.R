@@ -90,7 +90,7 @@ cu_add_argos_cols <- function(x){
 #' @title Batch Fitting CTCRW Models for Argos (and FastGPS) Data
 #' @description A basic CTCRW model is fitted to a list of data sets where each
 #' element in the list represents the data for a single individual or deployment.
-#' @param data_list A list of data sets
+#' @param data_list A list of data sets. Will also accept a single \code{sf} data frame as well.
 #' @param bm Fit a Brownian Motion model rather than in integrated OU model. Defaults to \code{bm = FALSE}.
 #' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
 #' when substituting different values. Make sure you know what you're doing because it can be easily
@@ -102,6 +102,9 @@ cu_add_argos_cols <- function(x){
 #'
 cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL, ...){
   i <- datetime <- type <- const <- NULL #handle 'no visible binding...'
+  if(!inherits(data_list,"list")  & inherits(data_list,"sf")){
+    data_list <- list(data_list)
+  }
   fits <- foreach(i=1:length(data_list), .packages="sf", ...) %do% {
     dat <- data_list[[i]] %>% dplyr::arrange(datetime)
     alsg <- all(dat$type%in%c("Argos_ls","FastGPS","known"))
@@ -128,7 +131,7 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL, ...){
         lower=c(rep(0,3), -Inf, log(-log(1-1.0e-4))),
         upper=c(rep(Inf,3), Inf, log(-log(1.0e-4)))
       )
-      theta <- c(rep(log(1.2),3),9,0.5)
+      theta <- c(rep(log(1.2),3),9,log(-log(0.8)))
     } else{
       err.model <- list(x =  ~0+ln.sd.x, y = ~0+ln.sd.y, rho= ~error.corr)
       fixPar <- c(1,1,NA,NA)
@@ -147,13 +150,14 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL, ...){
     # Fit ctcrw model
     suppressMessages(
       out <- crawl::crwMLE(
-        mov.model = ~1, err.model = err.model, data = dat, Time.name="datetime",
+        mov.model = ~1, err.model = err.model, data = dat[897:nrow(dat), ], Time.name="datetime",
         fixPar = fixPar, constr = constr, theta = theta,
-        control = list(maxit=2000), initialSANN = list(maxit=1500, temp=10),
+        control = list(maxit=10000), initialSANN = list(maxit=1500, temp=10),
         attempts=10, method = "L-BFGS-B")
     )
     out
   }
+  if(length(fits)==1) fits <- fits[[1]]
   return(fits)
 }
 

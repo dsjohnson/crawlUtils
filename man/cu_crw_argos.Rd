@@ -7,7 +7,7 @@
 cu_crw_argos(data_list, bm = FALSE, fixPar = NULL, ...)
 }
 \arguments{
-\item{data_list}{A list of data sets}
+\item{data_list}{A list of data sets. Will also accept a single \code{sf} data frame as well.}
 
 \item{bm}{Fit a Brownian Motion model rather than in integrated OU model. Defaults to \code{bm = FALSE}.}
 
