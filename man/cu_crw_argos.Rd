@@ -4,12 +4,27 @@
 \alias{cu_crw_argos}
 \title{Batch Fitting CTCRW Models for Argos (and FastGPS) Data}
 \usage{
-cu_crw_argos(data_list, bm = FALSE, fixPar = NULL, ...)
+cu_crw_argos(
+  data_list,
+  move_phase = NULL,
+  bm = FALSE,
+  crw_control = NULL,
+  fixPar = NULL,
+  ...
+)
 }
 \arguments{
 \item{data_list}{A list of data sets. Will also accept a single \code{sf} data frame as well.}
 
+\item{move_phase}{An optional character value indicating a factor variable column in the data that
+designates different movement phases.}
+
 \item{bm}{Fit a Brownian Motion model rather than in integrated OU model. Defaults to \code{bm = FALSE}.}
+
+\item{crw_control}{A named list passed to \code{\link[crawl]{crwMLE}} for optimization.
+There is one additional parameter \code{lambda}. If added \code{crw_control$lambda}
+is rate parameter used for the soft equality constraint on class \code{0}, \code{A},
+ and \code{B} paramters for Argos LS observations in a mixed KF/LS dataset.}
 
 \item{fixPar}{An alternative to the default set of fixed parameter values. Care should be taken
 when substituting different values. Make sure you know what you're doing because it can be easily

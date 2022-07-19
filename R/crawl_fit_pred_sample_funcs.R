@@ -19,7 +19,7 @@
 #' @export
 #'
 cu_add_argos_cols <- function(x){
-  error.corr <- quality <- NULL #handle 'no visible binding...'
+  error.corr <- quality <- ln.sd.x <- ln.sd.y <- error_area <- NULL #handle 'no visible binding...'
   col_nms <- colnames(x)
   if('error_semi_major_axis' %in% col_nms &
      'error_semi_minor_axis' %in% col_nms &
@@ -91,70 +91,123 @@ cu_add_argos_cols <- function(x){
 #' @description A basic CTCRW model is fitted to a list of data sets where each
 #' element in the list represents the data for a single individual or deployment.
 #' @param data_list A list of data sets. Will also accept a single \code{sf} data frame as well.
+#' @param move_phase An optional character value indicating a factor variable column in the data that
+#' designates different movement phases.
 #' @param bm Fit a Brownian Motion model rather than in integrated OU model. Defaults to \code{bm = FALSE}.
+#' @param crw_control A named list passed to \code{\link[crawl]{crwMLE}} for optimization.
+#' There is one additional parameter \code{lambda}. If added \code{crw_control$lambda}
+#' is rate parameter used for the soft equality constraint on class \code{0}, \code{A},
+#'  and \code{B} paramters for Argos LS observations in a mixed KF/LS dataset.
 #' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
 #' when substituting different values. Make sure you know what you're doing because it can be easily
 #' broken
 #' @param ... Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
 #' for error handling in the loop.
-#' @import dplyr crawl sf foreach
+#' @import dplyr crawl sf foreach progressr
+#' @importFrom stats as.formula dexp model.frame model.matrix na.pass qchisq
+#' @importFrom utils head
 #' @export
 #'
-cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL, ...){
+cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, crw_control=NULL, fixPar=NULL, ...){
   i <- datetime <- type <- const <- NULL #handle 'no visible binding...'
+  progressr::handlers(global = TRUE)
   if(!inherits(data_list,"list")  & inherits(data_list,"sf")){
     data_list <- list(data_list)
   }
+  p <- progressr::progressor(length(data_list))
   fits <- foreach(i=1:length(data_list), .packages="sf", ...) %do% {
     dat <- data_list[[i]] %>% dplyr::arrange(datetime)
-    alsg <- all(dat$type%in%c("Argos_ls","FastGPS","known"))
-    akfg <- all(dat$type%in%c("Argos_kf","FastGPS","known"))
-    if(!alsg & !akfg) {
-      pct_alsg <- (dat %>% filter(type=="Argos_ls") %>% nrow()) / nrow(dat)
-      pct_akfg <- (dat %>% filter(type=="Argos_kf") %>% nrow()) / nrow(dat)
-      argos_pick <- if_else(pct_alsg > pct_akfg, "LS", "KF")
-      if (argos_pick == "LS") {
-        dat <- dat %>% filter(type %in% c("Argos_ls","FastGPS","known"))
-      }
-      if (argos_pick == "KF") {
-        dat <- dat %>% filter(type %in% c("Argos_kf","FastGPS","known"))
-      }
-      warning("Animal ", i, " has both LS and KF Argos location types or other unknown types!\n",
-              "Keeping ", argos_pick, " becuase ", argos_pick, " represents ",
-              "the larger percentage of the observations.")
+    all_gps <- all(dat$type%in%c("FastGPS","known"))
+    if(all_gps){
+      all_ls <- FALSE; all_kf==FALSE; mix_ls_kf <- FALSE
+    } else {
+      all_ls <- all(dat$type%in%c("Argos_ls","FastGPS","known"))
+      all_kf <- all(dat$type%in%c("Argos_kf","FastGPS","known"))
+      mix_ls_kf <- !all_ls & !all_kf
     }
-    if(alsg & akfg) alsg <- FALSE
-    if(alsg){
+    if(!is.null(move_phase)){
+      mov.model <- as.formula(paste0("~0+",move_phase))
+      mov.mf <-
+        model.matrix(mov.model, model.frame(mov.model, dat, na.action = na.pass))
+      if (any(is.na(mov.mf)))
+        stop("Missing values are not allowed in move_phase!")
+      n.mov <- ncol(mov.mf)
+    }else{
+      n.mov <- 1
+      mov.model <- ~1
+    }
+    theta_mov <- c(rep(8,n.mov),rep(log(-log(0.33)),n.mov))
+    fix_mov <- rep(NA, 2*n.mov)
+    lc_mov <- c(rep(-Inf,n.mov), rep(log(-log(1-1.0e-4)),n.mov))
+    uc_mov <- c(rep(Inf,n.mov), rep(log(-log(1.0e-4)),n.mov))
+    if(all_ls){
       err.model <- list(x =  ~0+ln.sd.x+aq0+aqA+aqB)
-      fixPar <- c(1,NA,NA,NA,NA,NA)
+      fixPar <- c(1,NA,NA,NA,fix_mov)
       constr <- list(
-        lower=c(rep(0,3), -Inf, log(-log(1-1.0e-4))),
-        upper=c(rep(Inf,3), Inf, log(-log(1.0e-4)))
+        lower=c(rep(0,3), lc_mov),
+        upper=c(rep(Inf,3), uc_mov)
       )
-      theta <- c(rep(log(1.2),3),9,log(-log(0.8)))
-    } else{
+      theta <- c(rep(log(1.2),3),theta_mov)
+      prior <- NULL
+    } else if(all_kf | all_gps){
       err.model <- list(x =  ~0+ln.sd.x, y = ~0+ln.sd.y, rho= ~error.corr)
-      fixPar <- c(1,1,NA,NA)
+      prior <- NULL
+      fixPar <- c(1,1,fix_mov)
       constr <- list(
-        lower=c(-Inf, log(-log(1-1.0e-4))),
-        upper=c(Inf, log(-log(1.0e-4)))
+        lower=lc_mov,
+        upper=uc_mov
       )
-      theta <- c(9,log(-log(0.8)))
+      theta <- theta_mov
+      prior <- NULL
+    } else if(mix_ls_kf){
+      if(is.null(crw_control$lambda)){
+        lambda <- 230
+      } else {
+        lambda <- crw_control$lambda
+      }
+      err.model <- list(x =  ~0+ln.sd.x+aq0+aqA+aqB, y = ~0+ln.sd.y+aq0+aqA+aqB, rho= ~error.corr)
+      prior <- function(par){sum(dexp(abs(par[1:3]-par[4:6]), lambda, log=TRUE))}
+      fixPar <- c(1,NA,NA,NA,1,NA,NA,NA,fix_mov)
+      constr <- list(
+        lower=c(rep(0,6), lc_mov),
+        upper=c(rep(Inf,6), uc_mov)
+      )
+      theta <- c(rep(log(1.2),6),theta_mov)
+    } else {
+      stop('Unknown location error types!')
     }
+
     if(bm){
-      fixPar[length(fixPar)] <- log(-log(1.0e-4))
-      constr$lower <- constr$lower[-length(constr$lower)]
-      constr$upper <- constr$upper[-length(constr$upper)]
-      theta <- theta[-length(theta)]
+      fixPar <- c(head(fixPar,-n.mov),rep(log(-log(1.0e-4)),n.mov))
+      constr$lower <- head(constr$lower,-n.mov)
+      constr$upper <- head(constr$upper,-3)
+      theta <- head(theta,-3)
     }
     # Fit ctcrw model
+    if(is.null(crw_control$initialSANN)){
+      initialSANN <- list(maxit=1500, temp=10)
+    }else{
+      initialSANN <- crw_control$initialSANN
+    }
+    if(is.null(crw_control$attempts)){
+      attempts <- 10
+    }else{
+      attempts <- crw_control$attempts
+    }
+    if(is.null(crw_control$control)){
+      control <- list(maxit=10000)
+    }else{
+      control <- crw_control$control
+    }
     suppressMessages(
       out <- crawl::crwMLE(
-        mov.model = ~1, err.model = err.model, data = dat[897:nrow(dat), ], Time.name="datetime",
+        mov.model = mov.model, err.model = err.model, data = dat, Time.name="datetime",
         fixPar = fixPar, constr = constr, theta = theta,
-        control = list(maxit=10000), initialSANN = list(maxit=1500, temp=10),
-        attempts=10, method = "L-BFGS-B")
+        control = control, initialSANN = initialSANN,
+        prior=prior,
+        attempts=attempts, method = "L-BFGS-B")
     )
+    p()
     out
   }
   if(length(fits)==1) fits <- fits[[1]]
@@ -181,11 +234,13 @@ cu_crw_argos <- function(data_list, bm=FALSE, fixPar=NULL, ...){
 #' viability \code{vis_graph}.
 #' @author Devin S. Johnson
 #' @export
-#' @import sf dplyr crawl foreach
+#' @import sf dplyr crawl foreach progressr
 #'
 cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
   i <- locType <- NULL #handle 'no visible binding...'
+  progressr::handlers(global = TRUE)
   route <- !is.null(barrier) & !is.null(vis_graph)
+  p <- progressr::progressor(length(fit_list))
   plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"), ...) %do% {
     pred <- crawl::crwPredict(fit_list[[i]], predTime=predTime, return.type="flat")
     if(route){
@@ -196,6 +251,7 @@ cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL
       pred <- pathroutr::prt_update_points(fix, pred)
     }
     if(as_sf & !route) pred <- crw_as_sf(pred,ftype="POINT")
+    p()
     pred
   }
   return(plist)
@@ -222,11 +278,13 @@ cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL
 #' viability \code{vis_graph}.
 #' @author Devin S. Johnson
 #' @export
-#' @import sf dplyr foreach crawl
+#' @import sf dplyr foreach crawl progressr
 #'
 cu_crw_sample <- function(size=8, fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
   i <- j <- NULL #handle 'no visible binding...'
+  progressr::handlers(global = TRUE)
   route <- !is.null(barrier) & !is.null(vis_graph)
+  p <- progressr::progressor(length(fit_list))
   slist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"),...)%do%{
     simObj <- crawl::crwSimulator(fit_list[[i]], parIS = 0, predTime=predTime)
     out <- foreach(j=1:size)%do%{
@@ -242,6 +300,7 @@ cu_crw_sample <- function(size=8, fit_list, predTime=NULL, barrier=NULL, vis_gra
       samp
     }
     # if(as_sf) out <- do.call(rbind, out) %>% st_as_sf()
+    p()
     out
   }
   return(slist)
