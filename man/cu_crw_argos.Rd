@@ -24,7 +24,7 @@ designates different movement phases.}
 \item{crw_control}{A named list passed to \code{\link[crawl]{crwMLE}} for optimization.
 There is one additional parameter \code{lambda}. If added \code{crw_control$lambda}
 is rate parameter used for the soft equality constraint on class \code{0}, \code{A},
- and \code{B} paramters for Argos LS observations in a mixed KF/LS dataset.}
+ and \code{B} parameters for Argos LS observations in a mixed KF/LS dataset.}
 
 \item{fixPar}{An alternative to the default set of fixed parameter values. Care should be taken
 when substituting different values. Make sure you know what you're doing because it can be easily

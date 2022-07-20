@@ -73,19 +73,36 @@ cu_add_argos_cols <- function(x){
         TRUE ~ ln.sd.y
       ),
       error.corr = ifelse(is.na(.data$error.corr), 0, .data$error.corr),
-      gq5 = ifelse(quality %in% c("4","5"), 1, 0),
-      gq4 = ifelse(quality=="4", 1, 0),
+      # gq5 = ifelse(quality %in% c("5"), 1, 0),
+      # gq4 = ifelse(quality=="4", 1, 0),
       aq0 = ifelse(quality %in% c("0","A","B"), 1, 0),
       aqA = ifelse(quality %in% c("A","B"), 1, 0),
       aqB = ifelse(quality=="B", 1, 0),
       error_area = pi*qchisq(0.95, 2)*exp(0.5*(ln.sd.x+ln.sd.y))*sqrt(1-error.corr^2),
-      error_area = ifelse(quality=="A", 1.1*error_area, error_area),
-      error_area = ifelse(quality=="B", 1.2*error_area, error_area)
+      error_area = ifelse(quality=="0", 1.1*error_area, error_area),
+      error_area = ifelse(quality=="A", 1.2*error_area, error_area),
+      error_area = ifelse(quality=="B", 1.3*error_area, error_area)
     )
   return(x)
 }
 
-
+get_ls_error_terms <- function(data){
+  mod <- NULL
+  par <- 0
+  if(any(data$quality=='0')){
+    mod <- " + aq0"
+    par <- par+1
+  }
+  if(any(data$quality=='A')){
+    mod <- paste0(mod," + aqA")
+    par <- par+1
+  }
+  if(any(data$quality=='B')){
+    mod <- paste0(mod," + aqB")
+    par <- par+1
+  }
+  return(list(mod=mod, par=par))
+}
 
 #' @title Batch Fitting CTCRW Models for Argos (and FastGPS) Data
 #' @description A basic CTCRW model is fitted to a list of data sets where each
@@ -97,7 +114,7 @@ cu_add_argos_cols <- function(x){
 #' @param crw_control A named list passed to \code{\link[crawl]{crwMLE}} for optimization.
 #' There is one additional parameter \code{lambda}. If added \code{crw_control$lambda}
 #' is rate parameter used for the soft equality constraint on class \code{0}, \code{A},
-#'  and \code{B} paramters for Argos LS observations in a mixed KF/LS dataset.
+#'  and \code{B} parameters for Argos LS observations in a mixed KF/LS dataset.
 #' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
 #' when substituting different values. Make sure you know what you're doing because it can be easily
 #' broken
@@ -106,6 +123,7 @@ cu_add_argos_cols <- function(x){
 #' @import dplyr crawl sf foreach progressr
 #' @importFrom stats as.formula dexp model.frame model.matrix na.pass qchisq
 #' @importFrom utils head
+#' @importFrom stats dnorm
 #' @export
 #'
 cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, crw_control=NULL, fixPar=NULL, ...){
@@ -141,14 +159,16 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, crw_control=NULL,
     lc_mov <- c(rep(-Inf,n.mov), rep(log(-log(1-1.0e-4)),n.mov))
     uc_mov <- c(rep(Inf,n.mov), rep(log(-log(1.0e-4)),n.mov))
     if(all_ls){
-      err.model <- list(x =  ~0+ln.sd.x+aq0+aqA+aqB)
-      fixPar <- c(1,NA,NA,NA,fix_mov)
+      err.pars <- get_ls_error_terms(dat)
+      err.model <- list(x =  as.formula(paste0("~0+ln.sd.x",err.pars$mod)))
+      fixPar <- c(1,rep(NA,err.pars$par),fix_mov)
       constr <- list(
-        lower=c(rep(0,3), lc_mov),
-        upper=c(rep(Inf,3), uc_mov)
+        lower=c(rep(0,err.pars$par), lc_mov),
+        upper=c(rep(Inf,err.pars$par), uc_mov)
       )
-      theta <- c(rep(log(1.2),3),theta_mov)
-      prior <- NULL
+      theta <- c(rep(log(1.2),err.pars$par),theta_mov)
+      prior <- function(par){sum(dnorm(par[1:err.pars$par], 0, log(20)/2, log=TRUE))}
+
     } else if(all_kf | all_gps){
       err.model <- list(x =  ~0+ln.sd.x, y = ~0+ln.sd.y, rho= ~error.corr)
       prior <- NULL
@@ -161,18 +181,25 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, crw_control=NULL,
       prior <- NULL
     } else if(mix_ls_kf){
       if(is.null(crw_control$lambda)){
-        lambda <- 230
+        lambda <- 0.0005
       } else {
         lambda <- crw_control$lambda
       }
-      err.model <- list(x =  ~0+ln.sd.x+aq0+aqA+aqB, y = ~0+ln.sd.y+aq0+aqA+aqB, rho= ~error.corr)
-      prior <- function(par){sum(dexp(abs(par[1:3]-par[4:6]), lambda, log=TRUE))}
-      fixPar <- c(1,NA,NA,NA,1,NA,NA,NA,fix_mov)
+      err.pars <- get_ls_error_terms(dat)
+      err.model <- list(
+        x =  as.formula(paste0("~0+ln.sd.x",err.pars$mod)),
+        y = as.formula(paste0("~0+ln.sd.y",err.pars$mod))
+        )
+      prior <- function(par){
+        sum(dnorm(par[1:err.pars$par]-par[(err.pars$par+1):(2*err.pars$par)], lambda, log=TRUE)) +
+          sum(dnorm(par[1:err.pars$par], 0, log(20)/2, log=TRUE))
+        }
+      fixPar <- c(1,rep(NA, err.pars$par),1,rep(NA, err.pars$par),fix_mov)
       constr <- list(
-        lower=c(rep(0,6), lc_mov),
-        upper=c(rep(Inf,6), uc_mov)
+        lower=c(rep(0,2*err.pars$par), lc_mov),
+        upper=c(rep(Inf,2*err.pars$par), uc_mov)
       )
-      theta <- c(rep(log(1.2),6),theta_mov)
+      theta <- c(rep(log(1.2),2*err.pars$par),theta_mov)
     } else {
       stop('Unknown location error types!')
     }
@@ -180,8 +207,8 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, crw_control=NULL,
     if(bm){
       fixPar <- c(head(fixPar,-n.mov),rep(log(-log(1.0e-4)),n.mov))
       constr$lower <- head(constr$lower,-n.mov)
-      constr$upper <- head(constr$upper,-3)
-      theta <- head(theta,-3)
+      constr$upper <- head(constr$upper,-n.mov)
+      theta <- head(theta,-n.mov)
     }
     # Fit ctcrw model
     if(is.null(crw_control$initialSANN)){
