@@ -129,7 +129,7 @@ get_ls_error_terms <- function(data){
 #' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
 #' when substituting different values. Make sure you know what you're doing because it can be easily
 #' broken
-#' @param skip_check See \code{\link[crawl]{crwMLE}} v2.3.0.
+#' @param skip_check See \code{\link[crawl]{crwMLE}} v2.3.0. Currnetly ignored.
 #' @param ... Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
 #' for error handling in the loop.
 #' @import dplyr crawl sf foreach progressr
