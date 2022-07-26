@@ -8,8 +8,10 @@ cu_crw_argos(
   data_list,
   move_phase = NULL,
   bm = FALSE,
+  use_prior = TRUE,
   crw_control = NULL,
   fixPar = NULL,
+  skip_check = FALSE,
   ...
 )
 }
@@ -21,6 +23,10 @@ designates different movement phases.}
 
 \item{bm}{Fit a Brownian Motion model rather than in integrated OU model. Defaults to \code{bm = FALSE}.}
 
+\item{use_prior}{Logical. Should a sensible mixture normal prior be use for the log beta and
+log error scale parameters to impose a soft constrait for better numerical optimization.
+Default is \code{TRUE}}
+
 \item{crw_control}{A named list passed to \code{\link[crawl]{crwMLE}} for optimization.
 There is one additional parameter \code{lambda}. If added \code{crw_control$lambda}
 is rate parameter used for the soft equality constraint on class \code{0}, \code{A},
@@ -29,6 +35,8 @@ is rate parameter used for the soft equality constraint on class \code{0}, \code
 \item{fixPar}{An alternative to the default set of fixed parameter values. Care should be taken
 when substituting different values. Make sure you know what you're doing because it can be easily
 broken}
+
+\item{skip_check}{See \code{\link[crawl]{crwMLE}}.}
 
 \item{...}{Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
 for error handling in the loop.}

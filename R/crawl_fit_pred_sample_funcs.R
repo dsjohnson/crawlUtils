@@ -54,7 +54,10 @@ cu_add_argos_cols <- function(x){
         type=="FastGPS" & quality=="11" ~ log(19/2),
         type=="Argos_ls" & quality=="3" ~ log(250),
         type=="Argos_ls" & quality=="2" ~ log(500),
-        type=="Argos_ls" & quality %in% c("1","0","A","B") ~ log(1500),
+        type=="Argos_ls" & quality=="1" ~ log(1500),
+        type=="Argos_ls" & quality=="0" ~ log(2.25*1500),
+        type=="Argos_ls" & quality=="A" ~ log(3.98*1500),
+        type=="Argos_ls" & quality=="B" ~ log(7.37*1500),
         TRUE ~ ln.sd.x
       ),
       ln.sd.y = dplyr::case_when(
@@ -69,19 +72,24 @@ cu_add_argos_cols <- function(x){
         type=="FastGPS" & quality=="11" ~ log(19/2),
         type=="Argos_ls" & quality=="3" ~ log(250),
         type=="Argos_ls" & quality=="2" ~ log(500),
-        type=="Argos_ls" & quality %in% c("1","0","A","B") ~ log(1500),
+        type=="Argos_ls" & quality=="1" ~ log(1500),
+        type=="Argos_ls" & quality=="0" ~ log(2.5*1500),
+        type=="Argos_ls" & quality=="A" ~ log(3.67*1500),
+        type=="Argos_ls" & quality=="B" ~ log(5.42*1500),
         TRUE ~ ln.sd.y
       ),
       error.corr = ifelse(is.na(.data$error.corr), 0, .data$error.corr),
       # gq5 = ifelse(quality %in% c("5"), 1, 0),
       # gq4 = ifelse(quality=="4", 1, 0),
-      aq0 = ifelse(quality %in% c("0","A","B"), 1, 0),
-      aqA = ifelse(quality %in% c("A","B"), 1, 0),
-      aqB = ifelse(quality=="B", 1, 0),
+      # aq0 = ifelse(quality %in% c("0","A","B"), 1, 0),
+      # aqA = ifelse(quality %in% c("A","B"), 1, 0),
+      # aqB = ifelse(quality=="B", 1, 0),
+      low_qual_argos = ifelse(quality %in% c("0","A","B"), 1, 0),
+      low_qual_gps = ifelse(quality=="4", 1, 0),
       error_area = pi*qchisq(0.95, 2)*exp(0.5*(ln.sd.x+ln.sd.y))*sqrt(1-error.corr^2),
-      error_area = ifelse(quality=="0", 1.1*error_area, error_area),
-      error_area = ifelse(quality=="A", 1.2*error_area, error_area),
-      error_area = ifelse(quality=="B", 1.3*error_area, error_area)
+      # error_area = ifelse(quality=="0", 1.1*error_area, error_area),
+      # error_area = ifelse(quality=="A", 1.2*error_area, error_area),
+      # error_area = ifelse(quality=="B", 1.3*error_area, error_area)
     )
   return(x)
 }
@@ -111,6 +119,9 @@ get_ls_error_terms <- function(data){
 #' @param move_phase An optional character value indicating a factor variable column in the data that
 #' designates different movement phases.
 #' @param bm Fit a Brownian Motion model rather than in integrated OU model. Defaults to \code{bm = FALSE}.
+#' @param use_prior Logical. Should a sensible mixture normal prior be use for the log beta and
+#' log error scale parameters to impose a soft constrait for better numerical optimization.
+#' Default is \code{TRUE}
 #' @param crw_control A named list passed to \code{\link[crawl]{crwMLE}} for optimization.
 #' There is one additional parameter \code{lambda}. If added \code{crw_control$lambda}
 #' is rate parameter used for the soft equality constraint on class \code{0}, \code{A},
@@ -118,6 +129,7 @@ get_ls_error_terms <- function(data){
 #' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
 #' when substituting different values. Make sure you know what you're doing because it can be easily
 #' broken
+#' @param skip_check See \code{\link[crawl]{crwMLE}}.
 #' @param ... Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
 #' for error handling in the loop.
 #' @import dplyr crawl sf foreach progressr
@@ -126,23 +138,27 @@ get_ls_error_terms <- function(data){
 #' @importFrom stats dnorm
 #' @export
 #'
-cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, crw_control=NULL, fixPar=NULL, ...){
+cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE, crw_control=NULL, fixPar=NULL, skip_check=FALSE,...){
   i <- datetime <- type <- const <- NULL #handle 'no visible binding...'
   progressr::handlers(global = TRUE)
   if(!inherits(data_list,"list")  & inherits(data_list,"sf")){
     data_list <- list(data_list)
   }
-  p <- progressr::progressor(length(data_list))
+  if(length(data_list)>1) p <- progressr::progressor(length(data_list))
+  # Define mix normal priors:
+  if(use_prior){
+    pb <- function(x){log(mean(dnorm(x,seq(-8.5,1.5,0.5),0.5)))}
+    prior_b <- function(x){sum(sapply(x,pb))}
+    plq <- function(x){log(mean(dnorm(x,seq(0,0.5,0.1),0.1)))}
+    prior_lq <- function(x){sum(sapply(x,plq))}
+  }
+
   fits <- foreach(i=1:length(data_list), .packages="sf", ...) %do% {
     dat <- data_list[[i]] %>% dplyr::arrange(datetime)
-    all_gps <- all(dat$type%in%c("FastGPS","known"))
-    if(all_gps){
-      all_ls <- FALSE; all_kf==FALSE; mix_ls_kf <- FALSE
-    } else {
-      all_ls <- all(dat$type%in%c("Argos_ls","FastGPS","known"))
-      all_kf <- all(dat$type%in%c("Argos_kf","FastGPS","known"))
-      mix_ls_kf <- !all_ls & !all_kf
+    if(!all(c('ln.sd.x','ln.sd.y','error.corr')%in%colnames(dat))){
+      stop("It appears that argos columns have not been added via 'cu_add_argos_cols()'")
     }
+
     if(!is.null(move_phase)){
       mov.model <- as.formula(paste0("~0+",move_phase))
       mov.mf <-
@@ -154,61 +170,74 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, crw_control=NULL,
       n.mov <- 1
       mov.model <- ~1
     }
-    theta_mov <- c(rep(8,n.mov),rep(log(-log(0.33)),n.mov))
-    fix_mov <- rep(NA, 2*n.mov)
-    lc_mov <- c(rep(-Inf,n.mov), rep(log(-log(1-1.0e-4)),n.mov))
-    uc_mov <- c(rep(Inf,n.mov), rep(log(-log(1.0e-4)),n.mov))
-    if(all_ls){
-      err.pars <- get_ls_error_terms(dat)
-      err.model <- list(x =  as.formula(paste0("~0+ln.sd.x",err.pars$mod)))
-      fixPar <- c(1,rep(NA,err.pars$par),fix_mov)
-      constr <- list(
-        lower=c(rep(0,err.pars$par), lc_mov),
-        upper=c(rep(Inf,err.pars$par), uc_mov)
-      )
-      theta <- c(rep(log(1.2),err.pars$par),theta_mov)
-      prior <- function(par){sum(dnorm(par[1:err.pars$par], 0, log(20)/2, log=TRUE))}
 
-    } else if(all_kf | all_gps){
-      err.model <- list(x =  ~0+ln.sd.x, y = ~0+ln.sd.y, rho= ~error.corr)
-      prior <- NULL
-      fixPar <- c(1,1,fix_mov)
-      constr <- list(
-        lower=lc_mov,
-        upper=uc_mov
-      )
-      theta <- theta_mov
-      prior <- NULL
-    } else if(mix_ls_kf){
-      if(is.null(crw_control$lambda)){
-        lambda <- 0.0005
-      } else {
-        lambda <- crw_control$lambda
+    # movement parameters quantities:
+    if(!bm){
+      mov.theta <- c(rep(8,n.mov),rep(log(-log(0.1)),n.mov))
+      mov.fix <- rep(NA, 2*n.mov)
+      if(use_prior){
+        mov.prior <- function(par){prior_b(tail(par,n.mov))}
+      } else{
+        mov.prior <- function(par){return(0)}
       }
-      err.pars <- get_ls_error_terms(dat)
-      err.model <- list(
-        x =  as.formula(paste0("~0+ln.sd.x",err.pars$mod)),
-        y = as.formula(paste0("~0+ln.sd.y",err.pars$mod))
-        )
-      prior <- function(par){
-        sum(dnorm(par[1:err.pars$par]-par[(err.pars$par+1):(2*err.pars$par)], lambda, log=TRUE)) +
-          sum(dnorm(par[1:err.pars$par], 0, log(20)/2, log=TRUE))
-        }
-      fixPar <- c(1,rep(NA, err.pars$par),1,rep(NA, err.pars$par),fix_mov)
-      constr <- list(
-        lower=c(rep(0,2*err.pars$par), lc_mov),
-        upper=c(rep(Inf,2*err.pars$par), uc_mov)
-      )
-      theta <- c(rep(log(1.2),2*err.pars$par),theta_mov)
-    } else {
-      stop('Unknown location error types!')
-    }
 
-    if(bm){
-      fixPar <- c(head(fixPar,-n.mov),rep(log(-log(1.0e-4)),n.mov))
-      constr$lower <- head(constr$lower,-n.mov)
-      constr$upper <- head(constr$upper,-n.mov)
-      theta <- head(theta,-n.mov)
+    } else if(bm){
+      mov.theta <- c(rep(8,n.mov))
+      mov.fix <- c(rep(NA, n.mov), rep(3, n.mov))
+      mov.prior <- function(par){return(0)}
+    } else{
+      stop("The 'bm' argument should be TRUE or FALSE")
+    }
+    # Determine error model and prior contraint function:
+    # if(mean(dat$type=="Argos_ls")<=0.05 & nrow(dat)>=100){
+    #   dat <- subset(dat, type!="Argos_ls")
+    # }
+    # lq_argos <- any(as.logical(dat$low_qual_argos))
+    # lq_gps <- any(as.logical(dat$low_qual_gps))
+    # if(!lq_argos & !lq_gps){
+    #   err.model <- list(
+    #     x =  as.formula("~ln.sd.x"),
+    #     y = as.formula("~ln.sd.y")
+    #   )
+    #   err.fix <- c(NA,1,NA,1)
+    #   err.theta <- NULL
+    #   err.prior <- function(par){return(0)}
+    # } else if(lq_argos & !lq_gps){
+    #   err.model <- list(
+    #     x =  as.formula("~ln.sd.x"),
+    #     y = as.formula("~ln.sd.y")
+    #   )
+    #   err.fix <- c(NA,1,NA,1)
+    #   err.theta <- c(0,0)
+    #   err.prior <- function(par){prior_lq(par[1:2])}
+    # } else if(!lq_argos & lq_gps){
+    #   err.model <- list(
+    #     x =  as.formula("~0+ln.sd.x+low_qual_gps"),
+    #     y = as.formula("~0+ln.sd.y+low_qual_gps")
+    #   )
+    #   err.fix <- c(1,NA,1,NA)
+    #   err.theta <- c(0,0)
+    #   err.prior <- function(par){prior_lq(par[1:2])}
+    # } else if(lq_argos & lq_gps){
+    #   err.model <- list(
+    #     x =  as.formula("~0+ln.sd.x+low_qual_argos+low_qual_gps"),
+    #     y = as.formula("~0+ln.sd.y+low_qual_argos+low_qual_gps")
+    #   )
+    #   err.fix <- c(1,NA,NA,1,NA,NA)
+    #   err.theta <- c(0,0,0,0)
+    #   err.prior <- function(par){prior_lq(par[1:4])}
+    # } else{
+    #   stop("Error structure cannot be determined.")
+    # }
+
+    err.model <- list(x=~ln.sd.x, y=~ln.sd.y, rho= ~error.corr)
+    err.fix <- c(NA,1,NA,1)
+    err.theta <- c(0,0)
+    #err.prior <- function(par){return(0)} #function(par){prior_lq(par[1:2])}
+    if(use_prior){
+      err.prior <- function(par){prior_lq(par[1:2])}
+    } else{
+      err.prior <- function(par){return(0)}
     }
     # Fit ctcrw model
     if(is.null(crw_control$initialSANN)){
@@ -226,15 +255,20 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, crw_control=NULL,
     }else{
       control <- crw_control$control
     }
+
+    theta <- c(err.theta, mov.theta)
+    fixPar <- c(err.fix, mov.fix)
+    prior <- function(par){err.prior(par) + mov.prior(par)}
     suppressMessages(
       out <- crawl::crwMLE(
         mov.model = mov.model, err.model = err.model, data = dat, Time.name="datetime",
-        fixPar = fixPar, constr = constr, theta = theta,
+        fixPar = fixPar, theta = theta,
         control = control, initialSANN = initialSANN,
         prior=prior,
-        attempts=attempts, method = "L-BFGS-B")
+        attempts=attempts, method = "Nelder-Mead",
+        skip_check=skip_check)
     )
-    p()
+    if(length(data_list)>1) p()
     out
   }
   if(length(fits)==1) fits <- fits[[1]]
