@@ -229,7 +229,7 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE, c
     # if(length(data_list)>1) p()
     out
   }
-  if(length(fits)==1) fits <- fits[[1]]
+  # if(length(fits)==1) fits <- fits[[1]]
   return(fits)
 }
 
