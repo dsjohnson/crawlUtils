@@ -132,7 +132,7 @@ get_ls_error_terms <- function(data){
 #' @param skip_check See \code{\link[crawl]{crwMLE}} v2.3.0. Currnetly ignored.
 #' @param ... Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
 #' for error handling in the loop.
-#' @import dplyr crawl sf foreach progressr
+#' @import dplyr crawl sf foreach
 #' @importFrom stats as.formula dexp model.frame model.matrix na.pass qchisq
 #' @importFrom utils head
 #' @importFrom stats dnorm
@@ -140,11 +140,11 @@ get_ls_error_terms <- function(data){
 #'
 cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE, crw_control=NULL, fixPar=NULL, skip_check=FALSE,...){
   i <- datetime <- type <- const <- NULL #handle 'no visible binding...'
-  progressr::handlers(global = TRUE)
+  # progressr::handlers(global = TRUE)
   if(!inherits(data_list,"list")  & inherits(data_list,"sf")){
     data_list <- list(data_list)
   }
-  if(length(data_list)>1) p <- progressr::progressor(length(data_list))
+  # if(length(data_list)>1) p <- progressr::progressor(length(data_list))
   # Define mix normal priors:
   if(use_prior){
     pb <- function(x){log(mean(dnorm(x,seq(-8.5,1.5,0.5),0.5)))}
@@ -188,47 +188,6 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE, c
     } else{
       stop("The 'bm' argument should be TRUE or FALSE")
     }
-    # Determine error model and prior contraint function:
-    # if(mean(dat$type=="Argos_ls")<=0.05 & nrow(dat)>=100){
-    #   dat <- subset(dat, type!="Argos_ls")
-    # }
-    # lq_argos <- any(as.logical(dat$low_qual_argos))
-    # lq_gps <- any(as.logical(dat$low_qual_gps))
-    # if(!lq_argos & !lq_gps){
-    #   err.model <- list(
-    #     x =  as.formula("~ln.sd.x"),
-    #     y = as.formula("~ln.sd.y")
-    #   )
-    #   err.fix <- c(NA,1,NA,1)
-    #   err.theta <- NULL
-    #   err.prior <- function(par){return(0)}
-    # } else if(lq_argos & !lq_gps){
-    #   err.model <- list(
-    #     x =  as.formula("~ln.sd.x"),
-    #     y = as.formula("~ln.sd.y")
-    #   )
-    #   err.fix <- c(NA,1,NA,1)
-    #   err.theta <- c(0,0)
-    #   err.prior <- function(par){prior_lq(par[1:2])}
-    # } else if(!lq_argos & lq_gps){
-    #   err.model <- list(
-    #     x =  as.formula("~0+ln.sd.x+low_qual_gps"),
-    #     y = as.formula("~0+ln.sd.y+low_qual_gps")
-    #   )
-    #   err.fix <- c(1,NA,1,NA)
-    #   err.theta <- c(0,0)
-    #   err.prior <- function(par){prior_lq(par[1:2])}
-    # } else if(lq_argos & lq_gps){
-    #   err.model <- list(
-    #     x =  as.formula("~0+ln.sd.x+low_qual_argos+low_qual_gps"),
-    #     y = as.formula("~0+ln.sd.y+low_qual_argos+low_qual_gps")
-    #   )
-    #   err.fix <- c(1,NA,NA,1,NA,NA)
-    #   err.theta <- c(0,0,0,0)
-    #   err.prior <- function(par){prior_lq(par[1:4])}
-    # } else{
-    #   stop("Error structure cannot be determined.")
-    # }
 
     err.model <- list(x=~ln.sd.x, y=~ln.sd.y, rho= ~error.corr)
     err.fix <- c(NA,1,NA,1)
@@ -267,7 +226,7 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE, c
         prior=prior,
         attempts=attempts, method = "Nelder-Mead")
     )
-    if(length(data_list)>1) p()
+    # if(length(data_list)>1) p()
     out
   }
   if(length(fits)==1) fits <- fits[[1]]
@@ -294,13 +253,13 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE, c
 #' viability \code{vis_graph}.
 #' @author Devin S. Johnson
 #' @export
-#' @import sf dplyr crawl foreach progressr
+#' @import sf dplyr crawl foreach
 #'
 cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
   i <- locType <- NULL #handle 'no visible binding...'
-  progressr::handlers(global = TRUE)
+  # progressr::handlers(global = TRUE)
   route <- !is.null(barrier) & !is.null(vis_graph)
-  p <- progressr::progressor(length(fit_list))
+  # p <- progressr::progressor(length(fit_list))
   plist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"), ...) %do% {
     pred <- crawl::crwPredict(fit_list[[i]], predTime=predTime, return.type="flat")
     if(route){
@@ -311,7 +270,7 @@ cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL
       pred <- pathroutr::prt_update_points(fix, pred)
     }
     if(as_sf & !route) pred <- crw_as_sf(pred,ftype="POINT")
-    p()
+    # p()
     pred
   }
   return(plist)
@@ -338,13 +297,13 @@ cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL
 #' viability \code{vis_graph}.
 #' @author Devin S. Johnson
 #' @export
-#' @import sf dplyr foreach crawl progressr
+#' @import sf dplyr foreach crawl
 #'
 cu_crw_sample <- function(size=8, fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
   i <- j <- NULL #handle 'no visible binding...'
-  progressr::handlers(global = TRUE)
+  # progressr::handlers(global = TRUE)
   route <- !is.null(barrier) & !is.null(vis_graph)
-  p <- progressr::progressor(length(fit_list))
+  # p <- progressr::progressor(length(fit_list))
   slist <- foreach(i=1:length(fit_list), .packages=c("sf","dplyr"),...)%do%{
     simObj <- crawl::crwSimulator(fit_list[[i]], parIS = 0, predTime=predTime)
     out <- foreach(j=1:size)%do%{
@@ -360,7 +319,7 @@ cu_crw_sample <- function(size=8, fit_list, predTime=NULL, barrier=NULL, vis_gra
       samp
     }
     # if(as_sf) out <- do.call(rbind, out) %>% st_as_sf()
-    p()
+    # p()
     out
   }
   return(slist)
