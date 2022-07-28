@@ -150,6 +150,7 @@ cu_crw_ess <- function(fit, aug=NULL){
 #' sample size calculation is used for a plugin 2d Gaussian kernel.
 #' @author Devin S. Johnson
 #' @import sf crawl
+#' @useDynLib crawlUtils, .registration = TRUE
 #' @export
 #'
 cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
@@ -331,8 +332,9 @@ cu_ud_grid <- function(bb, barrier=NULL,...){
   grid <- st_make_grid(bb, ...) %>% st_as_sf()
   if(!is.null(barrier)){
     grid <- grid %>% st_difference(barrier) %>% nngeo::st_remove_holes()
-    mgrid <- filter(grid, st_is(geom,"MULTIPOLYGON")) %>% st_cast("POLYGON")
-    grid <- filter(grid, st_is(geom,"POLYGON")) %>% bind_rows(mgrid)
+    geom <- attr(grid, "sf_column")
+    mgrid <- filter(grid, st_is(.data[[geom]],"MULTIPOLYGON")) %>% st_cast("POLYGON")
+    grid <- filter(grid, st_is(.data[[geom]],"POLYGON")) %>% bind_rows(mgrid)
   }
   grid$cell <- 1:nrow(grid)
   grid$area <- st_area(grid)

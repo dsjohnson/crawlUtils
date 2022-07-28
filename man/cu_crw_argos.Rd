@@ -36,7 +36,7 @@ is rate parameter used for the soft equality constraint on class \code{0}, \code
 when substituting different values. Make sure you know what you're doing because it can be easily
 broken}
 
-\item{skip_check}{See \code{\link[crawl]{crwMLE}}.}
+\item{skip_check}{See \code{\link[crawl]{crwMLE}} v2.3.0. Currnetly ignored.}
 
 \item{...}{Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
 for error handling in the loop.}
