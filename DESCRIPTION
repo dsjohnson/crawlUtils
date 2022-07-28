@@ -16,4 +16,6 @@ RoxygenNote: 7.2.0
 Imports: fuzzyjoin, dplyr, lubridate, magrittr,
     sf, crawl, foreach, rmapshaper, nngeo, units, janitor, readr, ggplot2, mgcv
 Suggests: pathroutr, ctmm
+Remotes: 
+  jmlondon/pathroutr
 LinkingTo: Rcpp
