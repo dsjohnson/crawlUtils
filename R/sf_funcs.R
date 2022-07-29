@@ -2,20 +2,24 @@
 #' @title Expand Spatial Bounding Box
 #' @description Expand an \code{sf} bounding box by an expansion factor
 #' @param bbox An \code{sf} bounding box. See \code{\link[sf:st_bbox]{sf::st_bbox}}.
-#' @param ef Expansion factor, must be positive
+#' @param ef Expansion factor, must be positive and length 1 or 2.
+#' If \code{length(ef)==2} then the first refers to the \code{x} coordinate
+#' and the second is accociated with \code{y} coordinate expansion.
 #' @author Josh M. London
 #' @importFrom sf st_bbox
 #' @export
 #'
 st_expand <- function(bbox, ef) {
+  if(length(ef)==1) ef <- c(ef, ef)
+  if(length(ef)>2) stop("'ef' argument must be of length 1 or 2")
   xmin <- as.numeric(bbox$xmin)
   xmax <- as.numeric(bbox$xmax)
   ymin <- as.numeric(bbox$ymin)
   ymax <- as.numeric(bbox$ymax)
-  x_min <- xmin - ef*(xmax-xmin)
-  x_max <- xmax + ef*(xmax-xmin)
-  y_min <- ymin - ef*(ymax-ymin)
-  y_max <- ymax + ef*(ymax-ymin)
+  x_min <- xmin - ef[1]*(xmax-xmin)
+  x_max <- xmax + ef[1]*(xmax-xmin)
+  y_min <- ymin - ef[2]*(ymax-ymin)
+  y_max <- ymax + ef[2]*(ymax-ymin)
   bbox <- st_bbox(c(xmin = x_min, xmax = x_max,
                     ymax = y_max, ymin = y_min),
                   crs = st_crs(bbox))

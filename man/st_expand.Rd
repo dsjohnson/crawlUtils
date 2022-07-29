@@ -9,7 +9,9 @@ st_expand(bbox, ef)
 \arguments{
 \item{bbox}{An \code{sf} bounding box. See \code{\link[sf:st_bbox]{sf::st_bbox}}.}
 
-\item{ef}{Expansion factor, must be positive}
+\item{ef}{Expansion factor, must be positive and length 1 or 2.
+If \code{length(ef)==2} then the first refers to the \code{x} coordinate
+and the second is accociated with \code{y} coordinate expansion.}
 }
 \description{
 Expand an \code{sf} bounding box by an expansion factor
