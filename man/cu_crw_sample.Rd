@@ -5,8 +5,8 @@
 \title{Batch CRW Posterior Path Simulation For Multiple Animals}
 \usage{
 cu_crw_sample(
-  size = 8,
   fit_list,
+  size = 8,
   predTime = NULL,
   barrier = NULL,
   vis_graph = NULL,
@@ -15,9 +15,9 @@ cu_crw_sample(
 )
 }
 \arguments{
-\item{size}{The number of posterior draws. Defaults to 8 (See Details).}
-
 \item{fit_list}{A list of CRW fit objects}
+
+\item{size}{The number of posterior draws. Defaults to 8 (See Details).}
 
 \item{predTime}{A character string describing the desired frequency of prediction,
 e.g., \code{predTime="1 hour"} or \code{predTime="15 min"}.}

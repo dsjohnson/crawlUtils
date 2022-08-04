@@ -11,6 +11,8 @@ cu_crw_argos(
   use_prior = TRUE,
   crw_control = NULL,
   fixPar = NULL,
+  fit = TRUE,
+  constr = NULL,
   skip_check = FALSE,
   ...
 )
@@ -35,6 +37,11 @@ is rate parameter used for the soft equality constraint on class \code{0}, \code
 \item{fixPar}{An alternative to the default set of fixed parameter values. Care should be taken
 when substituting different values. Make sure you know what you're doing because it can be easily
 broken}
+
+\item{fit}{Logical. CTCRW parameters are estimated if \code{fit=TRUE} (default), else
+the results of \code{\link[crawl]{displayPar}}.}
+
+\item{constr}{Parameter constraints. See \code{\link[crawl]{crwMLE}}}
 
 \item{skip_check}{See \code{\link[crawl]{crwMLE}} v2.3.0. Currnetly ignored.}
 

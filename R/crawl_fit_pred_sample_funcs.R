@@ -129,6 +129,9 @@ get_ls_error_terms <- function(data){
 #' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
 #' when substituting different values. Make sure you know what you're doing because it can be easily
 #' broken
+#' @param fit Logical. CTCRW parameters are estimated if \code{fit=TRUE} (default), else
+#' the results of \code{\link[crawl]{displayPar}}.
+#' @param constr Parameter constraints. See \code{\link[crawl]{crwMLE}}
 #' @param skip_check See \code{\link[crawl]{crwMLE}} v2.3.0. Currnetly ignored.
 #' @param ... Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
 #' for error handling in the loop.
@@ -138,7 +141,9 @@ get_ls_error_terms <- function(data){
 #' @importFrom stats dnorm
 #' @export
 #'
-cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE, crw_control=NULL, fixPar=NULL, skip_check=FALSE,...){
+cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE,
+                         crw_control=NULL, fixPar=NULL, fit = TRUE,
+                         constr=NULL, skip_check=FALSE,...){
   i <- datetime <- type <- const <- NULL #handle 'no visible binding...'
   # progressr::handlers(global = TRUE)
   if(!inherits(data_list,"list")  & inherits(data_list,"sf")){
@@ -216,16 +221,45 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE, c
     }
 
     theta <- c(err.theta, mov.theta)
-    fixPar <- c(err.fix, mov.fix)
+    if(is.null(fixPar)){
+      fixPar <- c(err.fix, mov.fix)
+    } else{
+      theta <- NULL
+    }
+
     prior <- function(par){err.prior(par) + mov.prior(par)}
-    suppressMessages(
-      out <- crawl::crwMLE(
-        mov.model = mov.model, err.model = err.model, data = dat, Time.name="datetime",
-        fixPar = fixPar, theta = theta,
-        control = control, initialSANN = initialSANN,
-        prior=prior,
-        attempts=attempts, method = "Nelder-Mead")
-    )
+
+    if(fit){
+      if(is.null(constr)){
+        constr <- list(lower = -Inf, upper = Inf)
+        suppressMessages(
+          out <- crawl::crwMLE(
+            mov.model = mov.model, err.model = err.model, data = dat, Time.name="datetime",
+            fixPar = fixPar, theta = theta,
+            control = control, initialSANN = initialSANN,
+            prior=prior,
+            attempts=attempts, method = "Nelder-Mead")
+        )
+      } else{
+        suppressMessages(
+          out <- crawl::crwMLE(
+            mov.model = mov.model, err.model = err.model, data = dat, Time.name="datetime",
+            fixPar = fixPar, theta = theta,
+            control = control, constr=constr, initialSANN = initialSANN,
+            prior=prior,
+            attempts=attempts, method = "L-BFGS-B")
+        )
+      }
+    } else{
+      suppressMessages(
+        out <- crawl::displayPar(
+          mov.model = mov.model, err.model = err.model, data = dat, Time.name="datetime",
+          fixPar = fixPar, theta = theta,
+          control = control, constr=constr, initialSANN = initialSANN,
+          prior=prior,
+          attempts=attempts)
+      )
+    }
     # if(length(data_list)>1) p()
     out
   }
@@ -280,8 +314,8 @@ cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL
 #' @title Batch CRW Posterior Path Simulation For Multiple Animals
 #' @description Uses a list of CRW fitted models and desired simulation times
 #' to make draws from the location (and velocity) posterior distribution for telemetered animals.
-#' @param size The number of posterior draws. Defaults to 8 (See Details).
 #' @param fit_list A list of CRW fit objects
+#' @param size The number of posterior draws. Defaults to 8 (See Details).
 #' @param predTime A character string describing the desired frequency of prediction,
 #' e.g., \code{predTime="1 hour"} or \code{predTime="15 min"}.
 #' @param barrier An \code{sf} polygon object representing areas where the animal cannot access.
@@ -299,7 +333,7 @@ cu_crw_predict <- function(fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL
 #' @export
 #' @import sf dplyr foreach crawl
 #'
-cu_crw_sample <- function(size=8, fit_list, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
+cu_crw_sample <- function(fit_list, size=8, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
   i <- j <- NULL #handle 'no visible binding...'
   # progressr::handlers(global = TRUE)
   route <- !is.null(barrier) & !is.null(vis_graph)
@@ -324,3 +358,6 @@ cu_crw_sample <- function(size=8, fit_list, predTime=NULL, barrier=NULL, vis_gra
   }
   return(slist)
 }
+
+
+
