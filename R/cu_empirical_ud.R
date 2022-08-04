@@ -1,13 +1,12 @@
 #' Calculate an empirical utilization distribution
 #'
-#' @param grid 
-#' @param pts 
-#' @param average 
+#' @param grid a grid created from [cu_ud_grid()]
+#' @param pts an sf point object
+#' @param average should an average UD be created from 1 or more pts layers
 #'
-#' @return
+#' @return grid with an additional column, mean_pts
 #' @export
 #'
-#' @examples
 cu_empirical_ud <- function(grid, pts, average = TRUE) {
   npts_in_poly <- function(grid, pts) {
     res <- grid %>% 
