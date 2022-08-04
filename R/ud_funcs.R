@@ -76,7 +76,7 @@ cu_crw_covmat <- function(x, corr=TRUE, cf, E=0){
 
 #' @title Calculate Effective Sample Size for a Set of CRW locations
 #' @description Estimates the number of independent locations in a CRW data set
-#' using the method of Acosta and Vallejos (2018) [AV18].
+#' using the method of Acosta and Vallejos (2018) `AV18`.
 #' @param fit A \code{crwFit} object (See \code{\link[crawl]{crwMLE}}).
 #' @param aug Either a \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} objects
 #' from which the extra \code{predTime} location times will be used in the calculation.
