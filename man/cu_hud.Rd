@@ -13,7 +13,7 @@ cu_hud(ud, alpha = 0.9)
 }
 \description{
 The lowest 1-alpha percent of a utilization distribution is removed
-to give a highest alpha\% UD which can be used as a home range estimate, or just
+to give a highest alpha\\% UD which can be used as a home range estimate, or just
 reduce spatial extent of UDs for a animal with a small spatial scale of use relative to the study area
 }
 \author{

@@ -15,7 +15,7 @@ The \code{\link[crawl]{crw_as_sf}} transformed versions of these objects will al
 }
 \description{
 Estimates the number of independent locations in a CRW data set
-using the method of Acosta and Vallejos (2018) [AV18].
+using the method of Acosta and Vallejos (2018) \link{AV18}.
 }
 \details{
 The AV18 method was designed for spatial regression analysis, but

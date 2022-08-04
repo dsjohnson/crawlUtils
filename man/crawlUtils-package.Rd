@@ -13,8 +13,8 @@ for ease of model fitting and track prediction, notably in marine environments.
 \tabular{ll}{
 Package: \tab crawlUtils\cr
 Type: \tab Package\cr
-Version: \tab 0.1.13\cr
-Date: \tab August 3, 2022\cr
+Version: \tab 0.1.14\cr
+Date: \tab August 4, 2022\cr
 License: \tab CC0 \cr
 LazyLoad: \tab yes\cr
 }
@@ -30,5 +30,5 @@ highest quality, tools such as this are under constant development and are subje
 }
 \author{
 Devin S. Johnson
-Maintainer: Devin S. Johnson <devin.johnson@noaa.gov>
+Maintainer: Devin S. Johnson \href{mailto:devin.johnson@noaa.gov}{devin.johnson@noaa.gov}
 }
