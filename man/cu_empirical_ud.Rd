@@ -4,12 +4,12 @@
 \alias{cu_empirical_ud}
 \title{Calculate an empirical utilization distribution}
 \usage{
-cu_empirical_ud(grid, pts, average = TRUE)
+cu_empirical_ud(pts, grid, average = TRUE)
 }
 \arguments{
-\item{grid}{a grid created from \code{\link[=cu_ud_grid]{cu_ud_grid()}}}
-
 \item{pts}{an sf point object}
+
+\item{grid}{a grid created from \code{\link[=cu_ud_grid]{cu_ud_grid()}}}
 
 \item{average}{should an average UD be created from 1 or more pts layers}
 }
