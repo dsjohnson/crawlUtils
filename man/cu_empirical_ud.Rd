@@ -14,7 +14,7 @@ cu_empirical_ud(pts, grid, average = TRUE)
 \item{average}{should an average UD be created from 1 or more pts layers}
 }
 \value{
-grid with an additional column, mean_pts
+grid with an additional column, \emph{npts} or \emph{mean_pts}
 }
 \description{
 Calculate an empirical utilization distribution
