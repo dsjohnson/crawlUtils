@@ -7,12 +7,17 @@
 #' @return grid with an additional column, mean_pts
 #' @export
 #'
-cu_empirical_ud <- function(grid, pts, average = TRUE) {
-  npts_in_poly <- function(grid, pts) {
-    res <- grid %>% 
-      dplyr::mutate(npts = lengths(sf::st_intersects(grid, pts)))
+cu_empirical_ud <- function(pts, grid, average = TRUE) {
+  
+  npts_in_poly <- function(x, y) {
+    res <- dplyr::mutate(y, npts = lengths(sf::st_intersects(y, x)))
   }
-  res <- purrr::map2(list(grid), pts, npts_in_poly)
+  
+  if(inherits(pts,'sf')) {
+    pts <- list(pts)
+  }
+  res <- purrr::map_df(pts, npts_in_poly, y = grid)
+  
   if(average) {
     res <- res %>% 
       dplyr::bind_rows() %>% 
