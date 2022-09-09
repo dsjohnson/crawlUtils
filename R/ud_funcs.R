@@ -76,22 +76,15 @@ cu_crw_covmat <- function(x, corr=TRUE, cf, E=0){
 
 #' @title Calculate Effective Sample Size for a Set of CRW locations
 #' @description Estimates the number of independent locations in a CRW data set
-#' using the method of Acosta and Vallejos (2018) `AV18`.
+#' using the mutual information method of Bartoszek (2016).
 #' @param fit A \code{crwFit} object (See \code{\link[crawl]{crwMLE}}).
 #' @param aug Either a \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} objects
 #' from which the extra \code{predTime} location times will be used in the calculation.
 #' The \code{\link[crawl]{crw_as_sf}} transformed versions of these objects will also work.
-#' @details The AV18 method was designed for spatial regression analysis, but
-#' the derivations only use a general correlation matrix. Therefore, the time-series
-#' correlation matrix of the CRW (IOU) process was substituted. However, there is one
-#' change. The CRW (IOU) model is not stationary, so the correlation matrix of the observations
-#' conditioned on the first observations is used. The resulting sample size is then
-#' incremented by 1 to account for the first observation. The first observation
-#' can be regarded as a single independent observation from the animal UD, the AV18
-#' calculation then adds the number of additional 'independent' observations given the
-#' realization of the first one.
-#' @references Acosta, J., & Vallejos, R. (2018). Effective sample size for
-#' spatial regression models. Electronic Journal of Statistics, 12:3147-3180.
+#' @details Uses the "mutual information" formulation of Bartoszek (2016) to calculate the
+#' equivalent number of independent animal locations.
+#' @references Bartoszek, K. (2016). Phylogenetic effective sample size.
+#' Journal of Theoretical Biology. 407:371-386. (See https://arxiv.org/pdf/1507.07113.pdf).
 #' @author Devin S. Johnson
 #' @export
 #'
@@ -108,8 +101,8 @@ cu_crw_ess <- function(fit, aug=NULL){
     Sx[2:n,2:n] <- Sx[2:n,2:n] + R
     Sy <- matrix(v[2],n,n)
     Sy[2:n,2:n] <- Sy[2:n,2:n] + R
-    Sx <- cov2cor(Sx)
-    Sy <- cov2cor(Sy)
+    # Sx <- cov2cor(Sx)
+    # Sy <- cov2cor(Sy)
   } else{
     if(!"TimeNum"%in%colnames(aug)) stop("The 'aug' argument is not the correct class. See ?cu_crw_ess.")
     cf <- cu_crw_covfun(fit)
@@ -130,10 +123,16 @@ cu_crw_ess <- function(fit, aug=NULL){
       Sx <- Sx[-1,-1]
       Sy <- Sy[-1,-1]
     }
-    Sx <- cov2cor(Sx)
-    Sy <- cov2cor(Sy)
+    # Sx <- cov2cor(Sx)
+    # Sy <- cov2cor(Sy)
   }
-  ess <- (sum(solve(Sx,rep(1,nrow(Sx)))) + sum(solve(Sy,rep(1,nrow(Sy)))))/2
+  # ess <- (sum(solve(Sx,rep(1,nrow(Sx)))) + sum(solve(Sy,rep(1,nrow(Sy)))))/2
+  ln_det_V <- sum(log(eigen(Sx)$values)) + sum(log(eigen(Sy)$values))
+  sum_ln_det_Vj <- 0
+  for(j in 1:n){
+    sum_ln_det_Vj <- sum_ln_det_Vj + (log(Sx[j,j]) + log(Sy[j,j]))
+  }
+  ess <-  1 + (n-1)/log(exp(1) + 0.5*(sum_ln_det_Vj - ln_det_V))
   return(ess)
 }
 

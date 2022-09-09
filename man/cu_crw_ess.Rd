@@ -15,22 +15,15 @@ The \code{\link[crawl]{crw_as_sf}} transformed versions of these objects will al
 }
 \description{
 Estimates the number of independent locations in a CRW data set
-using the method of Acosta and Vallejos (2018) \code{AV18}.
+using the mutual information method of Bartoszek (2016).
 }
 \details{
-The AV18 method was designed for spatial regression analysis, but
-the derivations only use a general correlation matrix. Therefore, the time-series
-correlation matrix of the CRW (IOU) process was substituted. However, there is one
-change. The CRW (IOU) model is not stationary, so the correlation matrix of the observations
-conditioned on the first observations is used. The resulting sample size is then
-incremented by 1 to account for the first observation. The first observation
-can be regarded as a single independent observation from the animal UD, the AV18
-calculation then adds the number of additional 'independent' observations given the
-realization of the first one.
+Uses the "mutual information" formulation of Bartoszek (2016) to calculate the
+equivalent number of independent animal locations.
 }
 \references{
-Acosta, J., & Vallejos, R. (2018). Effective sample size for
-spatial regression models. Electronic Journal of Statistics, 12:3147-3180.
+Bartoszek, K. (2016). Phylogenetic effective sample size.
+Journal of Theoretical Biology. 407:371-386. (See https://arxiv.org/pdf/1507.07113.pdf).
 }
 \author{
 Devin S. Johnson
