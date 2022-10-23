@@ -9,9 +9,12 @@ st_expand(bbox, ef)
 \arguments{
 \item{bbox}{An \code{sf} bounding box. See \code{\link[sf:st_bbox]{sf::st_bbox}}.}
 
-\item{ef}{Expansion factor, must be positive and length 1 or 2.
+\item{ef}{Expansion factor, must be positive and length 1, 2 or 4.
+If \code{length(ef)==1} then the expansion factor is applied equally in all 4 directions.
 If \code{length(ef)==2} then the first refers to the \code{x} coordinate
-and the second is accociated with \code{y} coordinate expansion.}
+and the second is associated with \code{y} coordinate expansion. If \code{length(ef)==4} then
+then the first 2 refer to expansion to the west and east of the x coordinate, and the last
+to expand the y coordinate in the south and north direction respectively.}
 }
 \description{
 Expand an \code{sf} bounding box by an expansion factor

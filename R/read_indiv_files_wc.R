@@ -31,10 +31,25 @@ cu_read_wc_dirs <- function(x){
   for(i in 1:length(loc_file)){
     if(!file.exists(loc_file[i])) next
     id_data <- readr::read_csv(loc_file[i], show_col_types=FALSE) %>%
-      filter(!is.na(Latitude), !is.na(Longitude)) %>%
-      mutate(
-        Date = lubridate::parse_date_time(Date,"%H:%M:%S %d-%b-%Y")
-      ) %>% rename(datetime = Date)
+      filter(!is.na(Latitude), !is.na(Longitude))
+    time <- parse_date_time(id_data$Date,"%H:%M:%S %d-%b-%Y", quiet=TRUE)
+    if(all(is.na(time))){
+      time <- parse_date_time(id_data$Date,"%m/%d/%y %H:%M", quiet=TRUE)
+    }
+    if(all(is.na(time))){
+      time <- parse_date_time(id_data$Date,"%m/%d/%y %H:%M:%S", quiet=TRUE)
+    }
+    if(all(is.na(time))){
+      time <- parse_date_time(id_data$Date,"%m/%d/%Y %H:%M:%S", quiet=TRUE)
+    }
+    if(all(is.na(time))){
+      stop("Date format is unrecognizable.")
+    }
+    if(any(is.na(time))){
+      warning("Some dates were not converted to POSIX format. Look for NAs in datetime.")
+    }
+    id_data$datetime <- time
+    id_data <- select(id_data, -Date)
     id_data <- janitor::clean_names(id_data)
     locs <- bind_rows(locs, id_data)
   }
