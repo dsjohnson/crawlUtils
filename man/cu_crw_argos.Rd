@@ -25,13 +25,12 @@ designates different movement phases.}
 
 \item{use_prior}{Logical. Should a sensible mixture normal prior be use for the log beta and
 log error scale parameters to impose a soft constraint for better numerical optimization.
-Default is \code{TRUE}}
+Default is \code{TRUE}.}
 
 \item{crw_control}{A named list passed to \code{\link[crawl]{crwMLE}} for optimization. Alternatives
 for the default values of \code{initialSANN}, \code{attempts}, \code{control}, \code{theta}, \code{fixPar}, and \code{prior}
-can be specified here. See \code{\link[crawl]{crwMLE}} for a description of these arguments. WARNING! No
-checks are made for validity of the user override. So know what you are doing.
-and \code{B} parameters for Argos LS observations in a mixed KF/LS data set.}
+can be specified here. See \code{\link[crawl]{crwMLE}} for a description of these arguments. WARNING!!! No
+checks are made for validity of the user override. So know what you are doing.}
 
 \item{fit}{Logical. CTCRW parameters are estimated if \code{fit=TRUE} (default), else
 the results of \code{\link[crawl]{displayPar}}.}

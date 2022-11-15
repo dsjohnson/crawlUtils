@@ -3,7 +3,10 @@ Type: Package
 Title: Enhance And Integrate the {crawl} Package For Spatial Analysis Of Telemetry Output
 Version: 0.1.19
 Date: 2022-11-15
-Author: Devin S. Johnson
+Authors@R: c(
+  person("Devin S.", "Johnson", email = "devin.johnson@noaa.gov",role = c("aut", "cre")),
+  person("Josh", "London", email = "josh.london@noaa.gov", role = c("aut"))
+  )
 Maintainer: Devin S. Johnson <devin.johnson@noaa.gov>
 Description: Utility functions to augment the the {crawl} package and integrate
     it with the {sf} package for spatial analysis of telemetry model output. The additional 
