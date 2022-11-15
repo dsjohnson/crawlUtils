@@ -4,7 +4,7 @@
 \alias{cu_avg_ud}
 \title{Averaging Utilization Distributions}
 \usage{
-cu_avg_ud(ud_list, fac = NULL, w = NULL)
+cu_avg_ud(ud_list, fac = NULL, w = NULL, normwt = TRUE)
 }
 \arguments{
 \item{ud_list}{A list of individual utilization distributions calculated via
@@ -15,6 +15,9 @@ Each element of the list must have been calculated from the same grid created wi
 \item{fac}{A factor variable. Averaging will be calculated for each level of \code{fac}.}
 
 \item{w}{Weights for averaging.}
+
+\item{normwt}{Logical. Should the weights (\code{w}) be normalized such that \code{sum(w)=1}? Defaults
+to \code{TRUE}.}
 }
 \description{
 Averaging Utilization Distributions

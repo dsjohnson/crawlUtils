@@ -205,6 +205,7 @@ cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
   attr(gorig,"is_ud") <- TRUE
   attr(gorig, "ess") <- ess
   attr(gorig, "B") <- B
+  attr(out, "grid_id") <- attr(grid, "grid_id")
   return(gorig)
 }
 
@@ -249,10 +250,12 @@ cu_kde_ud_sample <- function(smp_list, grid, kern="iso", ess=NULL, norm=TRUE, B=
 #' \code{\link[crawlUtils]{cu_ud_grid}}.
 #' @param fac A factor variable. Averaging will be calculated for each level of \code{fac}.
 #' @param w Weights for averaging.
+#' @param normwt Logical. Should the weights (\code{w}) be normalized such that \code{sum(w)=1}? Defaults
+#' to \code{TRUE}.
 #' @import foreach sf
 #' @importFrom stats weighted.mean
 #' @export
-cu_avg_ud <- function(ud_list, fac=NULL, w=NULL){
+cu_avg_ud <- function(ud_list, fac=NULL, w=NULL, normwt=TRUE){
   i <- NULL
   if(!is.null(fac) & length(fac)!=length(ud_list)) stop("The 'fac' variable is not the same length as 'ud_list'")
   if(w=="ess"){
@@ -261,12 +264,13 @@ cu_avg_ud <- function(ud_list, fac=NULL, w=NULL){
   if(!is.null(w) & length(w)!=length(ud_list)) stop("The weights vector, 'w', is not the same length as 'ud_list'")
   if(is.null(w)) w <- rep(1, length(ud_list))
   if(any(w<0)) stop("There are w<0. All must be positive.")
+  if(normwt) w <- w/sum(w)
   if(is.null(fac)) fac <- rep(1,length(ud_list))
   fac <- factor(fac)
   lfac <- levels(fac)
   ids <- sapply(ud_list, attr, which="grid_id")
   if(all(ids!=ids[1])){
-    stop("UDs in 'ud_list' were not created from a 'cu_ud_grid()' grid. Averaging not possible.")
+    stop("UDs in 'ud_list' were not created from the same 'cu_ud_grid()' grid. See ?cu_average_ud_2()")
   }
   out_list <- foreach(i = 1:length(levels(fac)))%do%{
     idx <- fac==lfac[i]
@@ -274,14 +278,14 @@ cu_avg_ud <- function(ud_list, fac=NULL, w=NULL){
     geom <- st_geometry(ulist[[1]])
     ulist <- lapply(ulist, st_drop_geometry)
     umat <- sapply(ulist, "[", ,"ud")
-    semat <- matrix(0, nrow(umat), ncol(umat))
+    varmat <- matrix(0, nrow(umat), ncol(umat))
     for(j in 1:ncol(umat)){
-      if(!is.null(attr(ulist[[j]], "is_ud_smp"))) semat[,j] <- ulist[[j]]$se_ud
+      if(!is.null(attr(ulist[[j]], "is_ud_smp"))) varmat[,j] <- ulist[[j]]$se_ud^2
     }
     out <- ulist[[1]] %>% select(-any_of(c('ud', 'se_ud')))
-    out$ud <- apply(umat, 1, weighted.mean, w=w[idx]/sum(w[idx]))
-    var_ud <- apply(umat, 1, weighted.var, w=w[idx]/sum(w[idx])) + rowMeans(semat)
-    out$se_ud <- sqrt(var_ud)/sqrt(length(ulist))
+    out$ud <- apply(umat, 1, crossprod, y=w)
+    var_ud <- apply(varmat, 1, crossprod, y=w^2)
+    out$se_ud <- sqrt(var_ud)
     out <- cbind(geom, out) %>% st_as_sf()
     attr(out, "is_ud") <- TRUE
     attr(out, "grid_id") <- ids[1]
@@ -292,20 +296,58 @@ cu_avg_ud <- function(ud_list, fac=NULL, w=NULL){
 }
 
 
+# #' @title Averaging Non-overlapping Utilization Distributions
+# #' @param ud1 A utilization distributions calculated via
+# #' \code{\link[crawlUtils]{cu_kde_ud}} or \code{\link[crawlUtils]{cu_kde_ud_sample}}.
+# #' @param ud2 A utilization distributions calculated via
+# #' \code{\link[crawlUtils]{cu_kde_ud}} or \code{\link[crawlUtils]{cu_kde_ud_sample}}.
+# #' @param w A 2 -vector with weights for averaging.
+# #' @import foreach sf
+# #' @importFrom stats weighted.mean
+# #' @export
+# cu_avg_ud_2 <- function(ud1, ud2, w=NULL, normwt=FALSE){
+#   if(!is.null(w) & length(w)!=2) stop("length('w')!=2!")
+#   if(is.null(w)) w <- c(1,1)
+#   if(normwt) w <- w/sum(w)
+#   if(any(w<0)) stop("There are w<0.  Both must be positive.")
+#
+#   out_list <- foreach(i = 1:length(levels(fac)))%do%{
+#     idx <- fac==lfac[i]
+#     ulist <- ud_list[idx]
+#     geom <- st_geometry(ulist[[1]])
+#     ulist <- lapply(ulist, st_drop_geometry)
+#     umat <- sapply(ulist, "[", ,"ud")
+#     semat <- matrix(0, nrow(umat), ncol(umat))
+#     for(j in 1:ncol(umat)){
+#       if(!is.null(attr(ulist[[j]], "is_ud_smp"))) semat[,j] <- ulist[[j]]$se_ud
+#     }
+#     out <- ulist[[1]] %>% select(-any_of(c('ud', 'se_ud')))
+#     out$ud <- apply(umat, 1, weighted.mean, w=w[idx]/sum(w[idx]))
+#     var_ud <- apply(umat, 1, weighted.var, w=w[idx]/sum(w[idx])) + rowMeans(semat)
+#     out$se_ud <- sqrt(var_ud)/sqrt(length(ulist))
+#     out <- cbind(geom, out) %>% st_as_sf()
+#     attr(out, "is_ud") <- TRUE
+#     attr(out, "grid_id") <- ids[1]
+#     out
+#   }
+#   if(length(out_list)==1) out_list <- out_list[[1]]
+#   return(out_list)
+# }
 
 
 
-weighted.var <- function(x, w, na.rm = FALSE) {
-  if (na.rm) {
-    w <- w[i <- !is.na(x)]
-    x <- x[i]
-  }
-  sum.w <- sum(w)
-  sum.w2 <- sum(w^2)
-  mean.w <- sum(x * w) / sum(w)
-  (sum.w / (sum.w^2 - sum.w2)) * sum(w * (x - mean.w)^2, na.rm =
-                                       na.rm)
-}
+
+# weighted.var <- function(x, w, na.rm = FALSE) {
+#   if (na.rm) {
+#     w <- w[i <- !is.na(x)]
+#     x <- x[i]
+#   }
+#   sum.w <- sum(w)
+#   sum.w2 <- sum(w^2)
+#   mean.w <- sum(x * w) / sum(w)
+#   (sum.w / (sum.w^2 - sum.w2)) * sum(w * (x - mean.w)^2, na.rm =
+#                                        na.rm)
+# }
 
 
 
