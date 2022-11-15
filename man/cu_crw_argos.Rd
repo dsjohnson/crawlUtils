@@ -10,9 +10,7 @@ cu_crw_argos(
   bm = FALSE,
   use_prior = TRUE,
   crw_control = NULL,
-  fixPar = NULL,
   fit = TRUE,
-  constr = NULL,
   skip_check = FALSE,
   ...
 )
@@ -26,24 +24,19 @@ designates different movement phases.}
 \item{bm}{Fit a Brownian Motion model rather than in integrated OU model. Defaults to \code{bm = FALSE}.}
 
 \item{use_prior}{Logical. Should a sensible mixture normal prior be use for the log beta and
-log error scale parameters to impose a soft constrait for better numerical optimization.
+log error scale parameters to impose a soft constraint for better numerical optimization.
 Default is \code{TRUE}}
 
-\item{crw_control}{A named list passed to \code{\link[crawl]{crwMLE}} for optimization.
-There is one additional parameter \code{lambda}. If added \code{crw_control$lambda}
-is rate parameter used for the soft equality constraint on class \code{0}, \code{A},
-and \code{B} parameters for Argos LS observations in a mixed KF/LS dataset.}
-
-\item{fixPar}{An alternative to the default set of fixed parameter values. Care should be taken
-when substituting different values. Make sure you know what you're doing because it can be easily
-broken}
+\item{crw_control}{A named list passed to \code{\link[crawl]{crwMLE}} for optimization. Alternatives
+for the default values of \code{initialSANN}, \code{attempts}, \code{control}, \code{theta}, \code{fixPar}, and \code{prior}
+can be specified here. See \code{\link[crawl]{crwMLE}} for a description of these arguments. WARNING! No
+checks are made for validity of the user override. So know what you are doing.
+and \code{B} parameters for Argos LS observations in a mixed KF/LS data set.}
 
 \item{fit}{Logical. CTCRW parameters are estimated if \code{fit=TRUE} (default), else
 the results of \code{\link[crawl]{displayPar}}.}
 
-\item{constr}{Parameter constraints. See \code{\link[crawl]{crwMLE}}}
-
-\item{skip_check}{See \code{\link[crawl]{crwMLE}} v2.3.0. Currnetly ignored.}
+\item{skip_check}{See \code{\link[crawl]{crwMLE}} v2.3.0. Currently ignored.}
 
 \item{...}{Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
 for error handling in the loop.}

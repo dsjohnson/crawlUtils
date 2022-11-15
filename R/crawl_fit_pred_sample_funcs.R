@@ -120,19 +120,16 @@ get_ls_error_terms <- function(data){
 #' designates different movement phases.
 #' @param bm Fit a Brownian Motion model rather than in integrated OU model. Defaults to \code{bm = FALSE}.
 #' @param use_prior Logical. Should a sensible mixture normal prior be use for the log beta and
-#' log error scale parameters to impose a soft constrait for better numerical optimization.
+#' log error scale parameters to impose a soft constraint for better numerical optimization.
 #' Default is \code{TRUE}
-#' @param crw_control A named list passed to \code{\link[crawl]{crwMLE}} for optimization.
-#' There is one additional parameter \code{lambda}. If added \code{crw_control$lambda}
-#' is rate parameter used for the soft equality constraint on class \code{0}, \code{A},
-#'  and \code{B} parameters for Argos LS observations in a mixed KF/LS dataset.
-#' @param fixPar An alternative to the default set of fixed parameter values. Care should be taken
-#' when substituting different values. Make sure you know what you're doing because it can be easily
-#' broken
+#' @param crw_control A named list passed to \code{\link[crawl]{crwMLE}} for optimization. Alternatives
+#' for the default values of \code{initialSANN}, \code{attempts}, \code{control}, \code{theta}, \code{fixPar}, and \code{prior}
+#' can be specified here. See \code{\link[crawl]{crwMLE}} for a description of these arguments. WARNING! No
+#' checks are made for validity of the user override. So know what you are doing.
+#'  and \code{B} parameters for Argos LS observations in a mixed KF/LS data set.
 #' @param fit Logical. CTCRW parameters are estimated if \code{fit=TRUE} (default), else
 #' the results of \code{\link[crawl]{displayPar}}.
-#' @param constr Parameter constraints. See \code{\link[crawl]{crwMLE}}
-#' @param skip_check See \code{\link[crawl]{crwMLE}} v2.3.0. Currnetly ignored.
+#' @param skip_check See \code{\link[crawl]{crwMLE}} v2.3.0. Currently ignored.
 #' @param ... Additional arguments passed to the \code{\link[foreach]{foreach}} function, e.g.,
 #' for error handling in the loop.
 #' @import dplyr crawl sf foreach
@@ -142,8 +139,7 @@ get_ls_error_terms <- function(data){
 #' @export
 #'
 cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE,
-                         crw_control=NULL, fixPar=NULL, fit = TRUE,
-                         constr=NULL, skip_check=FALSE,...){
+                         crw_control=NULL, fit = TRUE, skip_check=FALSE,...){
   i <- datetime <- type <- const <- NULL #handle 'no visible binding...'
   # progressr::handlers(global = TRUE)
   if(!inherits(data_list,"list")  & inherits(data_list,"sf")){
@@ -203,6 +199,7 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE,
     } else{
       err.prior <- function(par){return(0)}
     }
+
     # Fit ctcrw model
     if(is.null(crw_control$initialSANN)){
       initialSANN <- list(maxit=1500, temp=10)
@@ -219,15 +216,21 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE,
     }else{
       control <- crw_control$control
     }
-
-    theta <- c(err.theta, mov.theta)
-    if(is.null(fixPar)){
+    if(is.null(crw_control$theta)){
+      theta <- c(err.theta, mov.theta)
+    }else{
+      theta <- crw_control$theta
+    }
+    if(is.null(crw_control$fixPar)){
       fixPar <- c(err.fix, mov.fix)
     } else{
-      theta <- NULL
+      fixPar <- crw_control$fixPar
     }
-
-    prior <- function(par){err.prior(par) + mov.prior(par)}
+    if(is.null(crw_control$prior)){
+      prior <- function(par){err.prior(par) + mov.prior(par)}
+    } else{
+      prior <- crw_control$prior
+    }
 
     if(fit){
       if(is.null(constr)){
