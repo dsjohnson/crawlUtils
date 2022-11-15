@@ -27,5 +27,5 @@ cu_empirical_ud <- function(pts, grid, average = TRUE) {
     res <- grid %>% dplyr::left_join(res, by="cell")
     return(res)
   }
-  return(pluck(res,1))
+  return(purrr::pluck(res,1))
 }
