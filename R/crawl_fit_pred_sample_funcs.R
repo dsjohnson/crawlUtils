@@ -230,6 +230,12 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE,
     } else{
       prior <- crw_control$prior
     }
+    if(is.null(crw_control$method)){
+      method <- "Nelder-Mead"
+    } else{
+      method <- crw_control$method
+    }
+
 
     if(fit){
       if(is.null(crw_control$constr)){
@@ -240,7 +246,7 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE,
             fixPar = fixPar, theta = theta,
             control = control, initialSANN = initialSANN,
             prior=prior,
-            attempts=attempts, method = "Nelder-Mead")
+            attempts=attempts, method = method)
         )
       } else{
         suppressMessages(
