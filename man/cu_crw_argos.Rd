@@ -28,7 +28,7 @@ log error scale parameters to impose a soft constraint for better numerical opti
 Default is \code{TRUE}.}
 
 \item{crw_control}{A named list passed to \code{\link[crawl]{crwMLE}} for optimization. Alternatives
-for the default values of \code{initialSANN}, \code{attempts}, \code{control}, \code{theta}, \code{fixPar}, and \code{prior}
+for the default values of \code{initialSANN}, \code{attempts}, \code{control}, \code{theta}, \code{fixPar}, \code{constr}, and \code{prior}
 can be specified here. See \code{\link[crawl]{crwMLE}} for a description of these arguments. WARNING!!! No
 checks are made for validity of the user override. So know what you are doing.}
 

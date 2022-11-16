@@ -123,7 +123,7 @@ get_ls_error_terms <- function(data){
 #' log error scale parameters to impose a soft constraint for better numerical optimization.
 #' Default is \code{TRUE}.
 #' @param crw_control A named list passed to \code{\link[crawl]{crwMLE}} for optimization. Alternatives
-#' for the default values of \code{initialSANN}, \code{attempts}, \code{control}, \code{theta}, \code{fixPar}, and \code{prior}
+#' for the default values of \code{initialSANN}, \code{attempts}, \code{control}, \code{theta}, \code{fixPar}, \code{constr}, and \code{prior}
 #' can be specified here. See \code{\link[crawl]{crwMLE}} for a description of these arguments. WARNING!!! No
 #' checks are made for validity of the user override. So know what you are doing.
 #' @param fit Logical. CTCRW parameters are estimated if \code{fit=TRUE} (default), else
@@ -232,7 +232,7 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE,
     }
 
     if(fit){
-      if(is.null(constr)){
+      if(is.null(crw_control$constr)){
         constr <- list(lower = -Inf, upper = Inf)
         suppressMessages(
           out <- crawl::crwMLE(
@@ -247,7 +247,7 @@ cu_crw_argos <- function(data_list, move_phase=NULL, bm=FALSE, use_prior=TRUE,
           out <- crawl::crwMLE(
             mov.model = mov.model, err.model = err.model, data = dat, Time.name="datetime",
             fixPar = fixPar, theta = theta,
-            control = control, constr=constr, initialSANN = initialSANN,
+            control = control, constr=crw_control$constr, initialSANN = initialSANN,
             prior=prior,
             attempts=attempts, method = "L-BFGS-B")
         )
