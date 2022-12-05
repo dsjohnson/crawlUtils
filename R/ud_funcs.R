@@ -122,6 +122,7 @@ cu_crw_ess <- function(fit, aug=NULL){
     if(!first_obs){
       Sx <- Sx[-1,-1]
       Sy <- Sy[-1,-1]
+      n <- n-1
     }
     # Sx <- cov2cor(Sx)
     # Sy <- cov2cor(Sy)
