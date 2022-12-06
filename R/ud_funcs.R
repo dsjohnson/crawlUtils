@@ -155,6 +155,7 @@ cu_crw_ess <- function(fit, aug=NULL){
 #'
 cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
   gorig <- NULL
+  grid_id <- attr(grid, "grid_id")
   if(inherits(grid,"sf")){
     gorig <- grid
     grid <- st_geometry(gorig)
@@ -206,7 +207,7 @@ cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
   attr(gorig,"is_ud") <- TRUE
   attr(gorig, "ess") <- ess
   attr(gorig, "B") <- B
-  attr(out, "grid_id") <- attr(grid, "grid_id")
+  attr(gorig, "grid_id") <- grid_id
   return(gorig)
 }
 
