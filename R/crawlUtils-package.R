@@ -7,8 +7,8 @@
 #' \tabular{ll}{
 #' Package: \tab crawlUtils\cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.1.21\cr
-#' Date: \tab December 6, 2022\cr
+#' Version: \tab 0.1.22\cr
+#' Date: \tab January 13, 2023\cr
 #' License: \tab CC0 \cr
 #' LazyLoad: \tab yes\cr
 #' }
@@ -44,10 +44,25 @@ NULL
   )
 }
 
-# .onUnload <- function(libpath)
-# {
-#   #library.dynam.unload("crawl", libpath)
-#   cat("\nBye-Bye from crawl\n\n")
-#   return(invisible())
+
+# weighted.var <- function(x, w, na.rm = FALSE) {
+#   if (na.rm) {
+#     w <- w[i <- !is.na(x)]
+#     x <- x[i]
+#   }
+#   sum.w <- sum(w)
+#   sum.w2 <- sum(w^2)
+#   mean.w <- sum(x * w) / sum(w)
+#   (sum.w / (sum.w^2 - sum.w2)) * sum(w * (x - mean.w)^2, na.rm =
+#                                        na.rm)
 # }
+
+#~~~ Reference for summarizing overlapping polys:
+# https://stackoverflow.com/questions/48279545/summarise-attributes-from-sfst-intersection-where-geometries-overlaps
+# *** This doesn't really work in practice. Just use a common grid. ***
+
+
+
+
+
 

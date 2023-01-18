@@ -3,6 +3,7 @@
 export("%>%")
 export(cu_add_argos_cols)
 export(cu_add_migration)
+export(cu_argosDiag2Cov)
 export(cu_avg_ud)
 export(cu_bout_summary)
 export(cu_crw2ctmm)
