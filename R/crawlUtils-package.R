@@ -44,6 +44,13 @@ NULL
   )
 }
 
+rename_geometry <- function(g, name){
+  current = attr(g, "sf_column")
+  names(g)[names(g)==current] = name
+  st_geometry(g)=name
+  g
+}
+
 
 # weighted.var <- function(x, w, na.rm = FALSE) {
 #   if (na.rm) {

@@ -19,10 +19,19 @@ cu_ud_grid <- function(bb, barrier=NULL,...){
   if(!inherits(bb, "bbox")) bb <- st_bbox(bb)
   grid <- st_make_grid(bb, ...) %>% st_as_sf()
   if(!is.null(barrier)){
-    grid <- grid %>% st_difference(barrier) %>% nngeo::st_remove_holes()
-    geom <- attr(grid, "sf_column")
-    mgrid <- filter(grid, st_is(.data[[geom]],"MULTIPOLYGON")) %>% st_cast("POLYGON")
-    grid <- filter(grid, st_is(.data[[geom]],"POLYGON")) %>% bind_rows(mgrid)
+    grid_bb <- st_bbox(grid) %>% st_expand(1.1) %>% st_as_sfc()
+    barrier <- st_intersection(barrier, grid_bb)
+    idx <- lengths(st_intersects(grid, barrier)) > 0
+    grid_nc <- grid[!idx,] %>% rename_geometry("geometry")
+    grid_c <- grid[idx,]
+    rm(grid)
+    grid_c <- grid_c %>% st_difference(barrier) %>% nngeo::st_remove_holes()
+    geom <- attr(grid_c, "sf_column")
+    mgrid_c <- filter(grid_c, st_is(.data[[geom]],"MULTIPOLYGON")) %>% st_cast("POLYGON")
+    grid_c <- filter(grid_c, st_is(.data[[geom]],"POLYGON")) %>% bind_rows(mgrid_c)
+    rm(mgrid_c)
+    grid_c <- rename_geometry(grid_c, "geometry")
+    grid <- bind_rows(grid_nc, grid_c)
   }
   grid$cell <- 1:nrow(grid)
   grid$area <- st_area(grid)
