@@ -15,19 +15,9 @@
 #'
 cu_kde_ud_sample <- function(smp_list, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL){
   cell <- ud <- ud_tmp <- NULL
-  ulist <- lapply(smp_list, cu_kde_ud, grid=grid, kern=kern, ess=ess, norm=norm, B=B)
-  geom <- st_geometry(ulist[[1]])
-  ulist <- lapply(ulist, st_drop_geometry)
-  umat <- sapply(ulist, "[", ,"ud")
-  out <- ulist[[1]]
-
+  out <- cu_kde_ud(smp_list[[1]], grid=grid, kern=kern, ess=ess, norm=norm, B=B, type="skeleton")
+  umat <- sapply(smp_list, cu_kde_ud, grid=grid, kern=kern, ess=ess, norm=norm, B=B, type="vector")
   out$ud <- rowMeans(umat)
   out$se_ud <- apply(umat, 1, sd)
-  out <- cbind(geom, out) %>% st_as_sf()
-  attr(out, "is_ud") <- TRUE
-  attr(out, "is_ud_smp") <- TRUE
-  attr(out, "grid_id") <- attr(grid, "grid_id")
-  attr(out, "ess") <- attr(ulist[[1]], "ess")
-  attr(out, "B") <- attr(ulist[[1]], "B")
   return(out)
 }

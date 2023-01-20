@@ -4,7 +4,15 @@
 \alias{cu_kde_ud}
 \title{Kernel density estimator}
 \usage{
-cu_kde_ud(pts, grid, kern = "iso", ess = NULL, norm = TRUE, B = NULL)
+cu_kde_ud(
+  pts,
+  grid,
+  kern = "iso",
+  ess = NULL,
+  norm = TRUE,
+  B = NULL,
+  type = "original"
+)
 }
 \arguments{
 \item{pts}{A \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} object, or
@@ -21,6 +29,9 @@ sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}}
 
 \item{B}{Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
 sample size calculation is used for a plugin 2d Gaussian kernel.}
+
+\item{type}{Form of the return type. Can be \code{"original"} to have the UD returned in the same form as the \code{grid}
+argument. Or set \code{type="vector"} to return only a vector of UD values.}
 }
 \description{
 Calculates a Gaussian KDE for \code{crawl} simulations and predictions.
