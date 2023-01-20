@@ -37,6 +37,5 @@ cu_ud_grid <- function(bb, barrier=NULL,...){
   grid$area <- st_area(grid)
   if(max(grid$area)>units::set_units(1e+06,"m^2")) grid$area <- units::set_units(grid$area, "km^2")
   attr(grid,"grid_id") <- as.character(as.numeric(Sys.time()))
-  attr(grid, "row.names") <- NULL
   return(grid)
 }
