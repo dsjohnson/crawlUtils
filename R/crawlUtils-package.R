@@ -7,8 +7,8 @@
 #' \tabular{ll}{
 #' Package: \tab crawlUtils\cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.1.24\cr
-#' Date: \tab January 20, 2023\cr
+#' Version: \tab 0.1.25\cr
+#' Date: \tab January 26, 2023\cr
 #' License: \tab CC0 \cr
 #' LazyLoad: \tab yes\cr
 #' }

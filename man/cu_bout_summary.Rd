@@ -4,12 +4,12 @@
 \alias{cu_bout_summary}
 \title{Create a Table of Start and End Times for each Bout in a telemetry data set}
 \usage{
-cu_bout_summary(x, bout)
+cu_bout_summary(x, ...)
 }
 \arguments{
-\item{x}{A telelmtry data frame containing a bout column}
+\item{x}{A telemetry data frame containing a \code{bout_id} column.}
 
-\item{bout}{Character. The name of the bout column.}
+\item{...}{Ignored arguments}
 }
 \description{
 Summarizes a telemetry dataframe with a bout column into
