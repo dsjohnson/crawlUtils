@@ -25,14 +25,19 @@ cu_crw_predict <- function(fit, predTime=NULL, barrier=NULL, vis_graph=NULL, as_
   route <- !is.null(barrier) & !is.null(vis_graph)
   # p <- progressr::progressor(length(fit_list))
   pred <- crawl::crwPredict(fit, predTime=predTime, return.type="flat")
+  attr(pred, "crw_type") <- "crwPredict"
   if(route){
     if (!requireNamespace("pathroutr", quietly = TRUE)) stop("Please install {pathroutr} package: install.packages('pathroutr',repos='https://jmlondon.r-universe.dev')")
     pred <- pred %>% crawl::crw_as_sf(ftype="POINT", locType="p") %>% filter(locType=="p")
     pred <- pred %>% pathroutr::prt_trim(barrier)
     fix <- pathroutr::prt_reroute(pred, barrier, vis_graph, blend=FALSE)
     pred <- pathroutr::prt_update_points(fix, pred)
+    attr(pred, "crw_type") <- "crwPredict_sf"
   }
-  if(as_sf & !route) pred <- crw_as_sf(pred, ftype="POINT")
+  if(as_sf & !route){
+    pred <- crw_as_sf(pred, ftype="POINT")
+    attr(pred, "crw_type") <- "crwPredict_sf"
+  }
   # p()
   return(pred)
 }

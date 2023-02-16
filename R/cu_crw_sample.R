@@ -28,18 +28,27 @@ cu_crw_sample <- function(fit, size=8, predTime=NULL, barrier=NULL, vis_graph=NU
   simObj <- crawl::crwSimulator(fit, parIS = 0, predTime=predTime)
   out <- foreach(j=1:size)%do%{
     samp <- crawl::crwPostIS(simObj, fullPost = FALSE)
+    attr(samp, "crw_type") <- "crwIS"
     if(route){
       if (! requireNamespace("pathroutr", quietly = TRUE)) stop("Please install {pathroutr}: install.packages('pathroutr',repos='https://jmlondon.r-universe.dev')")
       samp <- samp %>% crawl::crw_as_sf(ftype="POINT", locType="p")
       samp <- samp %>% pathroutr::prt_trim(barrier)
       fix <- pathroutr::prt_reroute(samp, barrier, vis_graph, blend=FALSE)
       samp <- pathroutr::prt_update_points(fix, samp) %>% dplyr::mutate(rep=j)
+      attr(samp, "crw_type") <- "crwIS_sf"
     }
-    if(as_sf & !route) samp <- crw_as_sf(samp,ftype="POINT") %>% dplyr::mutate(rep=j)
+    if(as_sf & !route){
+      samp <- crw_as_sf(samp,ftype="POINT") %>% dplyr::mutate(rep=j)
+      attr(samp, "crw_type") <- "crwIS_sf"
+    }
     samp
   }
+  if(as_sf){
+    attr(out, "crw_type") <- "crwIS_sf_list"
+  } else{
+    attr(out, "crw_type") <- "crwIS_list"
+  }
   # p()
-  out
   return(out)
 }
 

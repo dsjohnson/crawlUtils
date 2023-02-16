@@ -153,6 +153,7 @@ cu_crw_argos <- function(data, move_phase=NULL, bm=FALSE, use_prior=TRUE,
         attempts=attempts)
     )
   }
+  attr(out, "crw_type") <- "crwFit_argos"
   out
   return(out)
 }
