@@ -19,7 +19,7 @@ RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 Imports: fuzzyjoin, dplyr, lubridate, magrittr, purrr,
     sf, crawl, foreach, rmapshaper, nngeo, units, janitor, readr, ggplot2, mgcv,
-    smoothr, sfheaders, GPSeqClus
+    smoothr, sfheaders, GPSeqClus, rlang
 Suggests: pathroutr, ctmm
 Remotes: 
   jmlondon/pathroutr

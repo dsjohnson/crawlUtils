@@ -17,15 +17,20 @@
 #'                          e.g., c(121, 274, 305) result may be: 1 Nov - 30 Apr (winter = 0), 1 May - 31 Aug (summer = 1), 1 Oct - 31 Oct (hunting season = 2)
 #' @param daylight_hrs Manually set start and stop hours (0-24) to classify day and night locations. - e.g. c(6,18) would classify 6AM - 6PM as daylight hrs.
 #'                     NA (default) uses 'suncalc' package to convert cluster location and time to be classified based on specific specific sunrise and sunset times.
+#' @references Clapp, J. G., Holbrook, J. D., & Thompson, D. J. (2021). GPSeqClus:
+#' An R package for sequential clustering of animal location data for model
+#' building, model application and field site investigations. Methods in Ecology
+#'  and Evolution, 12(5), 787-793.
 #' @import sf dplyr
 #' @importFrom GPSeqClus GPSeq_clus
 #' @importFrom sfheaders sf_to_df
+#' @importFrom rlang .data
 #' @author Devin S. Johnson
 #' @export
 cu_GPSeq_clus <- function(x, search_radius_m, window_days, clus_min_locs = 2,
                           centroid_calc = "mean", show_plots = c(FALSE, "mean"), scale_plot_clus = TRUE,
                           store_plots = FALSE, season_breaks_jul = NA, daylight_hrs = NA){
-  data <- AID <- TelemDate <- datetime <- y <- point_id <- sfg_id <- . <- NULL
+  data <- AID <- TelemDate <- datetime <- y <- point_id <- sfg_id <- . <- .data <- NULL
   x_type <- attr(x, "crw_type")
   if(inherits(x, "list")){
     if(!all(sapply(x, attr, "crw_type")=="crwIS_sf")) stop("The 'x' argument is not the correct form!")
@@ -33,10 +38,14 @@ cu_GPSeq_clus <- function(x, search_radius_m, window_days, clus_min_locs = 2,
     attr(x, "crw_type") <- "crwIS_sf_list"
     x_type <- "crwIS_sf_list"
   }
-  if(! x_type %in% c("crwIS_sf_list","crwIS_sf","crwPredict")) stop("The 'x' argument is not the correct form!")
+  if(! x_type %in% c("crwIS_sf_list","crwIS_sf","crwPredict_sf")) stop("The 'x' argument is not the correct form!")
   x_crs <- st_crs(x)
+  if("x" %in% colnames(x)) x <- rename(x, x..1=.data[["x"]])
+  if("y" %in% colnames(x)) x <- rename(x, y..1=.data[["y"]])
   x <- st_transform(x, 4326) |> sfheaders::sf_to_df(fill=TRUE) |> select(-sfg_id, -point_id) |>
     rename(Long=x, Lat=y, TelemDate=datetime)
+  if("x..1" %in% colnames(x)) x <- rename(x, x=.data[["x..1"]])
+  if("y..1" %in% colnames(x)) x <- rename(x, y=.data[["y..1"]])
   if(x_type=="crwIS_sf_list"){
     x <- mutate(x, AID=rep)
   } else {

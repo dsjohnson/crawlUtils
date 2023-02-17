@@ -48,6 +48,12 @@ must be an object output from \code{\link[crawlUtils]{cu_crw_predict}} or \code{
 \code{as_sf=TRUE}. In addition, here \code{show_plots=c(FALSE, "mean")} as the default. As the function executes
 there are a number of progress bars, they can be ignored.
 }
+\references{
+Clapp, J. G., Holbrook, J. D., & Thompson, D. J. (2021). GPSeqClus:
+An R package for sequential clustering of animal location data for model
+building, model application and field site investigations. Methods in Ecology
+and Evolution, 12(5), 787-793.
+}
 \author{
 Devin S. Johnson
 }
