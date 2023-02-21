@@ -21,7 +21,7 @@
 #' @import sf dplyr foreach crawl
 #'
 cu_crw_sample <- function(fit, size=8, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
-  j <- NULL #handle 'no visible binding...'
+  j <- fid <- NULL #handle 'no visible binding...'
   # progressr::handlers(global = TRUE)
   route <- !is.null(barrier) & !is.null(vis_graph)
   # p <- progressr::progressor(length(fit_list))

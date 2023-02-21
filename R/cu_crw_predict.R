@@ -20,7 +20,7 @@
 #' @import sf dplyr crawl foreach
 #'
 cu_crw_predict <- function(fit, predTime=NULL, barrier=NULL, vis_graph=NULL, as_sf=TRUE,...){
-  locType <- NULL #handle 'no visible binding...'
+  locType <- fid <- NULL #handle 'no visible binding...'
   # progressr::handlers(global = TRUE)
   route <- !is.null(barrier) & !is.null(vis_graph)
   # p <- progressr::progressor(length(fit_list))

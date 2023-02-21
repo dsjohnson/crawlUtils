@@ -31,7 +31,7 @@ cu_GPSeq_clus <- function(dat, search_radius_m, window_days, clus_min_locs = 2,
                           centroid_calc = "mean", show_plots = c(FALSE, "mean"), scale_plot_clus = TRUE,
                           store_plots = FALSE, season_breaks_jul = NA, daylight_hrs = NA){
 
-  data <- AID <- TelemDate <- datetime <- y <- point_id <- sfg_id <- . <- .data <- NULL
+  data <- AID <- TelemDate <- datetime <- y <- point_id <- sfg_id <- . <- .data <- x <- NULL
 
   ## Function to convert crw objects to GPSeqClus objects
   crw_to_GPSeq <- function(dat){
@@ -49,7 +49,6 @@ cu_GPSeq_clus <- function(dat, search_radius_m, window_days, clus_min_locs = 2,
   ex_GPSeq_clus <- function(dat,search_radius_m=search_radius_m, window_days=window_days, clus_min_locs=clus_min_locs,
                             centroid_calc=centroid_calc, show_plots=show_plots, scale_plot_clus=scale_plot_clus,
                             store_plots=store_plots, season_breaks_jul=season_breaks_jul, daylight_hrs=daylight_hrs){
-    x <- fid <- NULL
     x_type <- attr(dat, "crw_type")
     x_crs <- st_crs(dat)
     dat <- crw_to_GPSeq(dat)
