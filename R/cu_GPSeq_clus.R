@@ -1,10 +1,10 @@
 #' @title Add cluster information from the {GPSeq_clus} package.
 #' @description The function is simply a wrapper for the \code{\link[GPSeqClus]{GPSeq_clus}} function. All of the
-#' arguments are the same except for the \code{dat} argument (here \code{x}). The \code{x} argument
+#' arguments are the same except for the \code{dat} argument. The \code{dat} argument
 #' must be an object output from \code{\link[crawlUtils]{cu_crw_predict}} or \code{\link[crawlUtils]{cu_crw_sample}} with
 #' \code{as_sf=TRUE}. In addition, here \code{show_plots=c(FALSE, "mean")} as the default. As the function executes
 #' there are a number of progress bars, they can be ignored.
-#' @param x Output from \code{cu_crw_predict} or \code{cu_crw_sample}.
+#' @param dat Output from \code{cu_crw_predict} or \code{cu_crw_sample}.
 #' @param search_radius_m Search radius (meters) from cluster centroid when building clusters.
 #' @param window_days Temporal window (days) to search for new locations from the most recent location in a cluster
 #' @param clus_min_locs Minimum number of locations required to form a cluster. Default is 2.
@@ -27,33 +27,34 @@
 #' @importFrom rlang .data
 #' @author Devin S. Johnson
 #' @export
-cu_GPSeq_clus <- function(x, search_radius_m, window_days, clus_min_locs = 2,
+cu_GPSeq_clus <- function(dat, search_radius_m, window_days, clus_min_locs = 2,
                           centroid_calc = "mean", show_plots = c(FALSE, "mean"), scale_plot_clus = TRUE,
                           store_plots = FALSE, season_breaks_jul = NA, daylight_hrs = NA){
 
   data <- AID <- TelemDate <- datetime <- y <- point_id <- sfg_id <- . <- .data <- NULL
 
   ## Function to convert crw objects to GPSeqClus objects
-  crw_to_GPSeq <- function(x){
-    if("x" %in% colnames(x)) x <- dplyr::rename(x, x..1=.data[["x"]])
-    if("y" %in% colnames(x)) x <- dplyr::rename(x, y..1=.data[["y"]])
-    x <- st_transform(x, 4326) |> sfheaders::sf_to_df(fill=TRUE) |> dplyr::select(-sfg_id, -point_id) |>
+  crw_to_GPSeq <- function(dat){
+    if("x" %in% colnames(dat)) dat <- dplyr::rename(dat, x..1=.data[["x"]])
+    if("y" %in% colnames(dat)) dat <- dplyr::rename(dat, y..1=.data[["y"]])
+    dat <- st_transform(dat, 4326) |> sfheaders::sf_to_df(fill=TRUE) |> dplyr::select(-sfg_id, -point_id) |>
       dplyr::rename(Long=x, Lat=y, TelemDate=datetime)
-    if("x..1" %in% colnames(x)) x <- dplyr::rename(x, x=.data[["x..1"]])
-    if("y..1" %in% colnames(x)) x <- dplyr::rename(x, y=.data[["y..1"]])
-    x$AID <- 1
-    return(x)
+    if("x..1" %in% colnames(dat)) dat <- dplyr::rename(dat, x=.data[["x..1"]])
+    if("y..1" %in% colnames(dat)) dat <- dplyr::rename(dat, y=.data[["y..1"]])
+    dat$AID <- 1
+    return(dat)
   }
 
   ## function to execute clustering
-  ex_GPSeq_clus <- function(x,search_radius_m=search_radius_m, window_days=window_days, clus_min_locs=clus_min_locs,
+  ex_GPSeq_clus <- function(dat,search_radius_m=search_radius_m, window_days=window_days, clus_min_locs=clus_min_locs,
                             centroid_calc=centroid_calc, show_plots=show_plots, scale_plot_clus=scale_plot_clus,
                             store_plots=store_plots, season_breaks_jul=season_breaks_jul, daylight_hrs=daylight_hrs){
-    x_type <- attr(x, "crw_type")
-    x_crs <- st_crs(x)
-    x <- crw_to_GPSeq(x)
+    x <- fid <- NULL
+    x_type <- attr(dat, "crw_type")
+    x_crs <- st_crs(dat)
+    dat <- crw_to_GPSeq(dat)
     clus <- try(suppressWarnings(
-      GPSeqClus::GPSeq_clus(dat=x,search_radius_m=search_radius_m, window_days=window_days, clus_min_locs=clus_min_locs,
+      GPSeqClus::GPSeq_clus(dat=dat,search_radius_m=search_radius_m, window_days=window_days, clus_min_locs=clus_min_locs,
                             centroid_calc=centroid_calc, show_plots=show_plots, scale_plot_clus=scale_plot_clus,
                             store_plots=store_plots, season_breaks_jul=season_breaks_jul, daylight_hrs=daylight_hrs)
     ), silent=TRUE)
@@ -61,7 +62,7 @@ cu_GPSeq_clus <- function(x, search_radius_m, window_days, clus_min_locs = 2,
       clus <- clus[[1]] |> rename(datetime=TelemDate) |> st_as_sf(coords=c("Long","Lat"), crs=4326) |>
         st_transform(x_crs)
     } else if(clus[[1]]=="Error in data.frame(..., check.names = FALSE) : \n  arguments imply differing number of rows: 1, 0\n"){
-      clus <- x; clus$clus_ID <- as.integer(1)
+      clus <- dat; clus$clus_ID <- as.integer(1)
       clus <- clus |> rename(datetime=TelemDate) |> st_as_sf(coords=c("Long","Lat"), crs=4326) |>
         st_transform(x_crs)
     } else {
@@ -73,27 +74,27 @@ cu_GPSeq_clus <- function(x, search_radius_m, window_days, clus_min_locs = 2,
   }
 
   ## Main portion of function
-  x_type <- attr(x, "crw_type")
-  if(inherits(x, "list")){
-    if(!all(sapply(x, attr, "crw_type")=="crwIS_sf")) stop("The 'x' argument is not the correct form!")
+  x_type <- attr(dat, "crw_type")
+  if(inherits(dat, "list")){
+    if(!all(sapply(dat, attr, "crw_type")=="crwIS_sf")) stop("The 'dat' argument is not the correct form!")
     x_type <- "crwIS_sf_list"
   }
-  if(! x_type %in% c("crwIS_sf_list","crwIS_sf","crwPredict_sf")) stop("The 'x' argument is not the correct form!")
+  if(! x_type %in% c("crwIS_sf_list","crwIS_sf","crwPredict_sf")) stop("The 'dat' argument is not the correct form!")
   if(x_type %in% c("crwIS_sf","crwPredict_sf")){
-    x <- ex_GPSeq_clus(x,  search_radius_m=search_radius_m, window_days=window_days,
+    dat <- ex_GPSeq_clus(dat,  search_radius_m=search_radius_m, window_days=window_days,
                        clus_min_locs=clus_min_locs,centroid_calc=centroid_calc,
                        show_plots=show_plots, scale_plot_clus=scale_plot_clus,
                        store_plots=store_plots, season_breaks_jul=season_breaks_jul,
                        daylight_hrs=daylight_hrs)
   } else{
-    for(i in 1:length(x)){
-      x[[i]] <- ex_GPSeq_clus(x[[i]],  search_radius_m=search_radius_m, window_days=window_days,
+    for(i in 1:length(dat)){
+      dat[[i]] <- ex_GPSeq_clus(dat[[i]],  search_radius_m=search_radius_m, window_days=window_days,
                               clus_min_locs=clus_min_locs,centroid_calc=centroid_calc,
                               show_plots=show_plots, scale_plot_clus=scale_plot_clus,
                               store_plots=store_plots, season_breaks_jul=season_breaks_jul,
                               daylight_hrs=daylight_hrs)
     }
-    attr(x, "crw_type") <- "crwIS_sf_list"
+    attr(dat, "crw_type") <- "crwIS_sf_list"
   }
-  return(x)
+  return(dat)
 }

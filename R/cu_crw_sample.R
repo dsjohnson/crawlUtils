@@ -42,6 +42,7 @@ cu_crw_sample <- function(fit, size=8, predTime=NULL, barrier=NULL, vis_graph=NU
       attr(samp, "crw_type") <- "crwIS_sf"
     }
     samp
+    if("fid" %in% colnames(samp)) samp <- dplyr::select(samp, -fid)
   }
   if(as_sf){
     attr(out, "crw_type") <- "crwIS_sf_list"

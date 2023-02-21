@@ -38,6 +38,7 @@ cu_crw_predict <- function(fit, predTime=NULL, barrier=NULL, vis_graph=NULL, as_
     pred <- crw_as_sf(pred, ftype="POINT")
     attr(pred, "crw_type") <- "crwPredict_sf"
   }
+  if("fid" %in% colnames(pred)) pred <- dplyr::select(pred, -fid)
   # p()
   return(pred)
 }

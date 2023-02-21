@@ -5,7 +5,7 @@
 \title{Add cluster information from the {GPSeq_clus} package.}
 \usage{
 cu_GPSeq_clus(
-  x,
+  dat,
   search_radius_m,
   window_days,
   clus_min_locs = 2,
@@ -18,7 +18,7 @@ cu_GPSeq_clus(
 )
 }
 \arguments{
-\item{x}{Output from \code{cu_crw_predict} or \code{cu_crw_sample}.}
+\item{dat}{Output from \code{cu_crw_predict} or \code{cu_crw_sample}.}
 
 \item{search_radius_m}{Search radius (meters) from cluster centroid when building clusters.}
 
@@ -43,7 +43,7 @@ NA (default) uses 'suncalc' package to convert cluster location and time to be c
 }
 \description{
 The function is simply a wrapper for the \code{\link[GPSeqClus]{GPSeq_clus}} function. All of the
-arguments are the same except for the \code{dat} argument (here \code{x}). The \code{x} argument
+arguments are the same except for the \code{dat} argument. The \code{dat} argument
 must be an object output from \code{\link[crawlUtils]{cu_crw_predict}} or \code{\link[crawlUtils]{cu_crw_sample}} with
 \code{as_sf=TRUE}. In addition, here \code{show_plots=c(FALSE, "mean")} as the default. As the function executes
 there are a number of progress bars, they can be ignored.
