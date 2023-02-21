@@ -22,5 +22,5 @@ Imports: fuzzyjoin, dplyr, lubridate, magrittr, purrr,
     smoothr, sfheaders, GPSeqClus, rlang
 Suggests: pathroutr, ctmm
 Remotes: 
-  jmlondon/pathroutr
+  jmlondon/pathroutr, dsjohnson/GPSeqClus@fixes
 LinkingTo: Rcpp
