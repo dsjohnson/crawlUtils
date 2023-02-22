@@ -5,9 +5,27 @@
 #' is routed around barriers using the `{pathroutr}` package.
 #' @author Devin S. Johnson
 #' @export
-cu_extract_obs <- function(x, obs){
+cu_extract_obst <- function(x, obs){
   a <- obs$datetime
-  b <- x$datetime
+  x_type <- attr(x, "crw_type")
+  if(x_type %in% c("crwIS_list", "crwIS_sf_list")){
+    x2_type <- attr(x[[1]], "crw_type")
+    b <- x[[1]]$datetime
+  } else if(x_type %in% c("crwPredict","crwPredict_sf", "crwIS","crwIS_sf")){
+    b <- x$datetime
+  }else{
+    stop("x has unknown attr(x, 'crw_type')")
+  }
   ind <- apply(outer(a, b, \(x,y) abs(x-y)), 1, which.min)
-  return(x[ind,])
+  if(x_type %in% c("crwPredict","crwPredict_sf", "crwIS","crwIS_sf")){
+    x <- x[ind,]
+    attr(x, "crw_type") <- x_type
+  } else{
+    for(i in 1:length(x)){
+      x[[i]] <- x[[i]][ind,]
+      attr(x[[i]], "crw_type") <- x2_type
+    }
+    attr(x, "crw_type") <- x_type
+  }
+return(x)
 }
