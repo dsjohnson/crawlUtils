@@ -60,12 +60,11 @@ cu_GPSeq_clus <- function(dat, search_radius_m, window_days, clus_min_locs = 2,
     if(!inherits(clus,"try-error")){
       clus <- clus[[1]] |> rename(datetime=TelemDate) |> st_as_sf(coords=c("Long","Lat"), crs=4326) |>
         st_transform(x_crs)
-    } else if(clus[[1]]=="Error in data.frame(..., check.names = FALSE) : \n  arguments imply differing number of rows: 1, 0\n"){
-      clus <- dat; clus$clus_ID <- as.integer(1)
+    } else {
+      clus <- dat
       clus <- clus |> rename(datetime=TelemDate) |> st_as_sf(coords=c("Long","Lat"), crs=4326) |>
         st_transform(x_crs)
-    } else {
-      return(clus)
+      warning("Clustering failed, returning original data. Try different 'search_radius_m' values")
     }
     clus <- select(clus, -AID)
     attr(clus, "crw_type") <- x_type

@@ -10,7 +10,9 @@ cu_kde_ud_sample(
   kern = "iso",
   ess = NULL,
   norm = TRUE,
-  B = NULL
+  B = NULL,
+  B_subset = TRUE,
+  ...
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}}
 
 \item{B}{Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
 sample size calculation is used for a plugin 2d Gaussian kernel.}
+
+\item{B_subset}{A vector of values indicating which \code{pts} should be used for calculating \code{B} if left unspecified.}
+
+\item{...}{Additional arguments passed to \code{\link[crawlUtils]{cu_vel_B}}}
 }
 \description{
 Kernel density estimation for a posterior sample list

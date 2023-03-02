@@ -11,7 +11,9 @@ cu_kde_ud(
   ess = NULL,
   norm = TRUE,
   B = NULL,
-  type = "original"
+  B_subset = TRUE,
+  type = "original",
+  ...
 )
 }
 \arguments{
@@ -30,8 +32,12 @@ sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}}
 \item{B}{Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
 sample size calculation is used for a plugin 2d Gaussian kernel.}
 
+\item{B_subset}{A vector of values indicating which \code{pts} should be used for calculating \code{B} if left unspecified.}
+
 \item{type}{Form of the return type. Can be \code{"original"} to have the UD returned in the same form as the \code{grid}
 argument. Or set \code{type="vector"} to return only a vector of UD values.}
+
+\item{...}{additional arguments passed to \code{\link[crawlUtils]{cu_vel_B}}}
 }
 \description{
 Calculates a Gaussian KDE for \code{crawl} simulations and predictions.

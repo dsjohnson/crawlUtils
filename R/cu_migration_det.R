@@ -17,7 +17,8 @@
 #' the derivative of the dispersion function.
 #' @export
 #' @author Devin S. Johnson
-#' @import mgcv units lubridate dplyr sf
+#' @import units lubridate dplyr sf
+#' @rawNamespace import(mgcv, except = mvn)
 #' @importFrom stats coef dist predict vcov
 #'
 cu_migration_det <- function(data, min_disp, max_num_mig=1, min_phase_len=3,

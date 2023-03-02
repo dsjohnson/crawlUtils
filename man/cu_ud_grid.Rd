@@ -4,7 +4,7 @@
 \alias{cu_ud_grid}
 \title{Create a grid for kernel density estimation of animal UDs}
 \usage{
-cu_ud_grid(bb, barrier = NULL, ...)
+cu_ud_grid(bb, barrier = NULL, clique = FALSE, ...)
 }
 \arguments{
 \item{bb}{An \code{sf} bounding box or something that can be coerced into a
@@ -13,6 +13,9 @@ bounding box via \code{\link[sf]{st_bbox}} function.}
 \item{barrier}{\code{sf} or \code{sfc} polygon data which represents areas for
 which the animal cannot travel. Use will only be calculated on the outside of
 each polygon in \code{barrier}.}
+
+\item{clique}{Logical. Should separated segments be noted so they might be removed later. Only applicable
+when a barrier is provided.}
 
 \item{...}{Additional arguments passed to \code{\link[sf]{st_make_grid}} which
 is used to construct the base grid.}

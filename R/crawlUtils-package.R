@@ -7,8 +7,8 @@
 #' \tabular{ll}{
 #' Package: \tab crawlUtils\cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.1.30\cr
-#' Date: \tab February 21, 2023\cr
+#' Version: \tab 0.1.34\cr
+#' Date: \tab March 1, 2023\cr
 #' License: \tab CC0 \cr
 #' LazyLoad: \tab yes\cr
 #' }
@@ -28,6 +28,7 @@
 #' @docType package
 #' @author Devin S. Johnson
 #' Maintainer: Devin S. Johnson <devin.johnson@@noaa.gov>
+#' @useDynLib crawlUtils, .registration = TRUE
 #'
 NULL
 

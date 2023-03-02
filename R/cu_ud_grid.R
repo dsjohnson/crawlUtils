@@ -6,6 +6,8 @@
 #' @param barrier \code{sf} or \code{sfc} polygon data which represents areas for
 #' which the animal cannot travel. Use will only be calculated on the outside of
 #' each polygon in \code{barrier}.
+#' @param clique Logical. Should separated segments be noted so they might be removed later. Only applicable
+#' when a barrier is provided.
 #' @param ... Additional arguments passed to \code{\link[sf]{st_make_grid}} which
 #' is used to construct the base grid.
 #' @author Devin S. Johnson
@@ -14,7 +16,7 @@
 #' @importFrom units set_units
 #' @export
 #'
-cu_ud_grid <- function(bb, barrier=NULL,...){
+cu_ud_grid <- function(bb, barrier=NULL, clique=FALSE, ...){
   geom <- NULL
   if(!inherits(bb, "bbox")) bb <- st_bbox(bb)
   grid <- st_make_grid(bb, ...) %>% st_as_sf()
@@ -35,6 +37,12 @@ cu_ud_grid <- function(bb, barrier=NULL,...){
   }
   grid$cell <- 1:nrow(grid)
   grid$area <- st_area(grid)
+  if(!is.null(barrier) & clique){
+    message("The 'clique' argument is not currnetly functional. It is ignored for the time being.")
+  #   dmat <- st_distance(grid) |> units::drop_units()
+  #   hc <- hclust(as.dist(dmat>1), method="single")
+  #   grid$clique = cutree(hc, h=0.5)
+  }
   if(max(grid$area)>units::set_units(1e+06,"m^2")) grid$area <- units::set_units(grid$area, "km^2")
   attr(grid,"grid_id") <- as.character(as.numeric(Sys.time()))
   return(grid)

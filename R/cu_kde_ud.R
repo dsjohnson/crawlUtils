@@ -9,14 +9,18 @@
 #' sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}
 #' @param B Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
 #' sample size calculation is used for a plugin 2d Gaussian kernel.
+#' @param B_subset A vector of values indicating which `pts` should be used for calculating `B` if left unspecified.
 #' @param type Form of the return type. Can be \code{"original"} to have the UD returned in the same form as the \code{grid}
 #' argument. Or set \code{type="vector"} to return only a vector of UD values.
+#' @param ... additional arguments passed to \code{\link[crawlUtils]{cu_vel_B}}
 #' @author Devin S. Johnson
 #' @import sf crawl
 #' @useDynLib crawlUtils, .registration = TRUE
 #' @export
 #'
-cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL, type="original"){
+cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL, B_subset=TRUE, type="original", ...){
+
+  ### Checks
   gorig <- NULL
   grid_id <- attr(grid, "grid_id")
   if(inherits(grid,"sf")){
@@ -39,25 +43,7 @@ cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL, type="
   }
   if(st_crs(pts) != st_crs(grid)) stop("The 'pts' and 'grid' crs specifications do not match.")
 
-  if(type!="skeleton"){
-    xy_grid <- st_coordinates(grid)
-    xy_pts <- st_coordinates(pts)
-    if(is.null(B)){
-      if(kern == 'iso'){
-        B <- var(c(xy_pts[,1]-mean(xy_pts[,1]), xy_pts[,2]-mean(xy_pts[,2])))*diag(2)
-      } else if(kern=="diag"){
-        B <- diag(diag(var(xy_pts)))
-      } else{
-        B <- var(xy_pts)
-      }
-      B <- (ess^(-1/3))*B
-    }
-    ud <- kde_estimate(grid=xy_grid, points=xy_pts, B=solve(B), norm = norm)
-  } else {
-    ud <- NA
-    B <- NA
-  }
-
+  ### Get ESS value
   if(!is.null(ess)){
     if(inherits(ess, "crwFit")){
       ess <- cu_crw_ess(ess, pts)
@@ -68,6 +54,29 @@ cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL, type="
     ess <- nrow(pts)
   }
 
+  ### Compute bandwidth matrix
+  if(type!="skeleton"){
+    xy_grid <- st_coordinates(grid)
+    xy_pts <- st_coordinates(pts)
+    if(is.null(B)){
+      xy_B <- xy_pts[B_subset,]
+      if(kern == 'iso'){
+        B <- var(c(xy_B[,1]-mean(xy_B[,1]), xy_B[,2]-mean(xy_B[,2])))*diag(2)
+      } else if(kern=="diag"){
+        B <- diag(diag(var(xy_B)))
+      } else{
+        B <- var(xy_B)
+      }
+      B <- (ess^(-1/3))*B
+    } else if(B=="vel_B"){
+      B <- cu_vel_B(pts[B_subset,], ess, ...)
+    }
+    ud <- kde_estimate(grid=xy_grid, points=xy_pts, B=solve(B), norm = norm)
+  }
+  else {
+    ud <- NA
+    B <- NA
+  }
 
   if(type%in%c("original","skeleton")){
     if(!is.null(gorig)){
