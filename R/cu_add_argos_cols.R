@@ -55,7 +55,7 @@ cu_add_argos_cols <- function(x){
         TRUE ~ type
       ),
       ln.sd.x = dplyr::case_when(
-        type == "known" ~ log(10),
+        type == "known" ~ log(units*10),
         type=="FastGPS" & quality=="4" ~ log(1163*units/2),
         type=="FastGPS" & quality=="5" ~ log(169*units/2),
         type=="FastGPS" & quality=="6" ~ log(71*units/2),
@@ -73,7 +73,7 @@ cu_add_argos_cols <- function(x){
         TRUE ~ ln.sd.x
       ),
       ln.sd.y = dplyr::case_when(
-        type == "known" ~ log(10),
+        type == "known" ~ log(units*10),
         type=="FastGPS" & quality=="4" ~ log(1163*units/2),
         type=="FastGPS" & quality=="5" ~ log(169*units/2),
         type=="FastGPS" & quality=="6" ~ log(71*units/2),
