@@ -19,6 +19,18 @@
 #' @export
 #'
 cu_add_argos_cols <- function(x){
+  if (inherits(x,"sf")) {
+    proj_unit <- sf::st_crs(x, parameters = TRUE)$units_gdal
+    if (proj_unit == "metre") {
+      units <- 1
+    }
+    if (proj_unit == "kilometre") {
+      units <- 1/1000
+    }
+  } else {
+    units <- 1
+  }
+  
   error.corr <- quality <- ln.sd.x <- ln.sd.y <- error_area <- NULL #handle 'no visible binding...'
   col_nms <- colnames(x)
   if('error_semi_major_axis' %in% col_nms &
@@ -43,39 +55,39 @@ cu_add_argos_cols <- function(x){
         TRUE ~ type
       ),
       ln.sd.x = dplyr::case_when(
-        type == "known" ~ log(10),
-        type=="FastGPS" & quality=="4" ~ log(1163/2),
-        type=="FastGPS" & quality=="5" ~ log(169/2),
-        type=="FastGPS" & quality=="6" ~ log(71/2),
-        type=="FastGPS" & quality=="7" ~ log(43/2),
-        type=="FastGPS" & quality=="8" ~ log(34/2),
-        type=="FastGPS" & quality=="9" ~ log(28/2),
-        type=="FastGPS" & quality=="10" ~ log(24/2),
-        type=="FastGPS" & quality=="11" ~ log(19/2),
-        type=="Argos_ls" & quality=="3" ~ log(250),
-        type=="Argos_ls" & quality=="2" ~ log(500),
-        type=="Argos_ls" & quality=="1" ~ log(1500),
-        type=="Argos_ls" & quality=="0" ~ log(2.25*1500),
-        type=="Argos_ls" & quality=="A" ~ log(3.98*1500),
-        type=="Argos_ls" & quality=="B" ~ log(7.37*1500),
+        type == "known" ~ log(units*10),
+        type=="FastGPS" & quality=="4" ~ log(1163*units/2),
+        type=="FastGPS" & quality=="5" ~ log(169*units/2),
+        type=="FastGPS" & quality=="6" ~ log(71*units/2),
+        type=="FastGPS" & quality=="7" ~ log(43*units/2),
+        type=="FastGPS" & quality=="8" ~ log(34*units/2),
+        type=="FastGPS" & quality=="9" ~ log(28*units/2),
+        type=="FastGPS" & quality=="10" ~ log(24*units/2),
+        type=="FastGPS" & quality=="11" ~ log(19*units/2),
+        type=="Argos_ls" & quality=="3" ~ log(250*units),
+        type=="Argos_ls" & quality=="2" ~ log(500*units),
+        type=="Argos_ls" & quality=="1" ~ log(1500*units),
+        type=="Argos_ls" & quality=="0" ~ log(2.25*1500*units),
+        type=="Argos_ls" & quality=="A" ~ log(3.98*1500*units),
+        type=="Argos_ls" & quality=="B" ~ log(7.37*1500*units),
         TRUE ~ ln.sd.x
       ),
       ln.sd.y = dplyr::case_when(
-        type == "known" ~ log(10),
-        type=="FastGPS" & quality=="4" ~ log(1163/2),
-        type=="FastGPS" & quality=="5" ~ log(169/2),
-        type=="FastGPS" & quality=="6" ~ log(71/2),
-        type=="FastGPS" & quality=="7" ~ log(43/2),
-        type=="FastGPS" & quality=="8" ~ log(34/2),
-        type=="FastGPS" & quality=="9" ~ log(28/2),
-        type=="FastGPS" & quality=="10" ~ log(24/2),
-        type=="FastGPS" & quality=="11" ~ log(19/2),
-        type=="Argos_ls" & quality=="3" ~ log(250),
-        type=="Argos_ls" & quality=="2" ~ log(500),
-        type=="Argos_ls" & quality=="1" ~ log(1500),
-        type=="Argos_ls" & quality=="0" ~ log(2.5*1500),
-        type=="Argos_ls" & quality=="A" ~ log(3.67*1500),
-        type=="Argos_ls" & quality=="B" ~ log(5.42*1500),
+        type == "known" ~ log(units*10),
+        type=="FastGPS" & quality=="4" ~ log(1163*units/2),
+        type=="FastGPS" & quality=="5" ~ log(169*units/2),
+        type=="FastGPS" & quality=="6" ~ log(71*units/2),
+        type=="FastGPS" & quality=="7" ~ log(43*units/2),
+        type=="FastGPS" & quality=="8" ~ log(34*units/2),
+        type=="FastGPS" & quality=="9" ~ log(28*units/2),
+        type=="FastGPS" & quality=="10" ~ log(24*units/2),
+        type=="FastGPS" & quality=="11" ~ log(19*units/2),
+        type=="Argos_ls" & quality=="3" ~ log(250*units),
+        type=="Argos_ls" & quality=="2" ~ log(500*units),
+        type=="Argos_ls" & quality=="1" ~ log(1500*units),
+        type=="Argos_ls" & quality=="0" ~ log(2.5*1500*units),
+        type=="Argos_ls" & quality=="A" ~ log(3.67*1500*units),
+        type=="Argos_ls" & quality=="B" ~ log(5.42*1500*units),
         TRUE ~ ln.sd.y
       ),
       error.corr = ifelse(is.na(.data$error.corr), 0, .data$error.corr),
