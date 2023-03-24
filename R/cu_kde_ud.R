@@ -3,13 +3,12 @@
 #' @param pts A \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} object, or
 #' their 'sf' versions (See \link[crawl]{crw_as_sf}).
 #' @param grid An \code{\link[sf]{sf}} data frame containing the desired grid location for UD estimation.
-#' @param kern Type of covariance matrix for the Gaussian kernels.
 #' @param ess Effective sample size.
 #' @param norm Logical. Should each individual kernel be normalized to
 #' sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}
-#' @param B Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
-#' sample size calculation is used for a plugin 2d Gaussian kernel.
-#' @param B_subset A vector of values indicating which `pts` should be used for calculating `B` if left unspecified.
+#' @param bw Kernel bandwidth (standard deviation of Gaussian kernel). Defaults to the
+#' default plugin bandwidth `bandwidth.nrd` in the `MASS` package.
+#' @param bw_subset A vector of values indicating which `pts` should be used for calculating `B` if left unspecified.
 #' @param type Form of the return type. Can be \code{"original"} to have the UD returned in the same form as the \code{grid}
 #' argument. Or set \code{type="vector"} to return only a vector of UD values.
 #' @param ... additional arguments passed to \code{\link[crawlUtils]{cu_vel_B}}
@@ -18,7 +17,7 @@
 #' @useDynLib crawlUtils, .registration = TRUE
 #' @export
 #'
-cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL, B_subset=TRUE, type="original", ...){
+cu_kde_ud <- function(pts, grid, ess=NULL, norm=TRUE, bw=NULL, bw_subset=TRUE, type="original", ...){
 
   ### Checks
   gorig <- NULL
@@ -33,7 +32,6 @@ cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL, B_subs
   if(!inherits(grid,"sfc_POINT")){
     stop("The 'grid' argument must be either 'sfc_POLYGON', 'sfc_POINT', or 'sf' data frame containing the previous geometry types.")
   }
-  if(!kern%in%c("iso","diag","full")) stop("The 'kern' argument must be one of 'iso','diag',or 'full'")
   if(inherits(pts,"crwPredict") | inherits(pts,"crwIS")){
     pts <- crw_as_sf(pts, "POINT")
   }
@@ -58,19 +56,21 @@ cu_kde_ud <- function(pts, grid, kern="iso", ess=NULL, norm=TRUE, B=NULL, B_subs
   if(type!="skeleton"){
     xy_grid <- st_coordinates(grid)
     xy_pts <- st_coordinates(pts)
-    if(is.null(B)){
-      xy_B <- xy_pts[B_subset,]
-      if(kern == 'iso'){
-        B <- var(c(xy_B[,1]-mean(xy_B[,1]), xy_B[,2]-mean(xy_B[,2])))*diag(2)
-      } else if(kern=="diag"){
-        B <- diag(diag(var(xy_B)))
-      } else{
-        B <- var(xy_B)
+    if(is.null(bw)){
+      defbw <- function(x,ess)
+      {
+        r <- quantile(x, c(0.25, 0.75))
+        h <- (r[2] - r[1])/1.34
+        (1.06 * min(sqrt(var(x)), h) * ess^(-1/5))^2
       }
-      B <- (ess^(-1/3))*B
-    } else if(B=="vel_B"){
-      B <- cu_vel_B(pts[B_subset,], ess, ...)
+      xy_B <- xy_pts[bw_subset,]
+      B <- diag(c(defbw(xy_B[,1], ess), defbw(xy_B[,2], ess)))
+    } else if(bw=="vel_B"){
+      B <- cu_vel_B(pts[bw_subset,], ess, ...)
+    } else if(is.numeric(bw) & length(bw==1)){
+      B <- diag(rep(bw^2,2))
     }
+    else{stop("Error in 'bw' specification!")}
     ud <- kde_estimate(grid=xy_grid, points=xy_pts, B=solve(B), norm = norm)
   }
   else {

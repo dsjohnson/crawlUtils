@@ -7,12 +7,12 @@
 #' @param type Form of the return type. Can be \code{"original"} to have the UD returned in the same form as the \code{grid}
 #' argument. Set \code{type="vector"} to return only a vector of UD values. Finally, set \code{type="gmm"}
 #' to return the fitted \code{\link[mclust]{densityMclust}} object.
-#' @param ... Additional arguments to pass to \code{\link[mclust]{densityMclust}}.
+#' @param mclust_args A named list of additional arguments to pass to \code{\link[mclust]{densityMclust}}.
 #' @author Devin S. Johnson
 #' @import sf crawl mclust
 #' @export
 #'
-cu_gmm_ud <- function(pts, grid, ess=nrow(pts), type="original", ...){
+cu_gmm_ud <- function(pts, grid, ess=nrow(pts), type="original", mclust_args=list()){
 
   ### Checks
 
@@ -41,32 +41,28 @@ cu_gmm_ud <- function(pts, grid, ess=nrow(pts), type="original", ...){
   if(type!="gmm"){if(st_crs(pts) != st_crs(grid)) stop("The 'pts' and 'grid' crs specifications do not match.")}
 
   ### Get ESS value
-  if(!is.null(ess)){
-    if(inherits(ess, "crwFit")){
-      ess <- cu_crw_ess(ess, pts)
-    } else if(!is.numeric(ess)){
-      stop("The 'ess' argument must be either a 'crwFit' object or numeric if specified.")
-    }
-  }else{
-    ess <- nrow(pts)
+  if(inherits(ess, "crwFit")){
+    ess <- cu_crw_ess(ess, pts)
+  } else if(!is.numeric(ess)){
+    stop("The 'ess' argument must be either a 'crwFit' object or numeric if specified.")
   }
 
 
   ### Compute GMM
   if(type!="skeleton"){
     ## GMM models
-    mclust_args <- as.list(match.call(expand.dots=FALSE))$...
-    if(!is.null(mclust_args$G)){
-      G <- eval(mclust_args$G)
-      mclust_args["G"] <- NULL
-    }else{
+    # mclust_args <- as.list(match.call(expand.dots=FALSE))$...
+    if(is.null(mclust_args$G)){
       G <- 1:9
+    } else{
+      G <- mclust_args$G
+      mclust_args$G <- NULL
     }
-    if(!is.null(mclust_args$modelNames)){
-      modelNames <- eval(mclust_args$modelNames)
-      mclust_args["modelNames"] <- NULL
-    }else{
+    if(is.null(mclust_args$modelNames)){
       modelNames <- mclust.options("emModelNames")
+    } else{
+      modelNames <- mclust_args$modelNames
+      mclust_args$modelNames <- NULL
     }
     if(is.null(mclust_args$verbose)) mclust_args$verbose <- FALSE
     if(is.null(mclust_args$plot)) mclust_args$plot <- FALSE
@@ -90,6 +86,7 @@ cu_gmm_ud <- function(pts, grid, ess=nrow(pts), type="original", ...){
     g <- row(bic)[which.max(bic)]
     m <- col(bic)[which.max(bic)]
     args <-  c(list(data=xy_pts, G=G[g], modelNames=modelNames[m]), mclust_args)
+
     fit <- do.call(densityMclust, args)
     # browser()
     if(type!="gmm") {ud <- predict(fit, newdata=xy_grid, "dens"); ud <- ud/sum(ud)}

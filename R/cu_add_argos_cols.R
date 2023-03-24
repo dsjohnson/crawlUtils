@@ -5,6 +5,9 @@
 #' Argos Kalman filter.
 #' @param x Data frame containing location telemetry data and Argos quality
 #' information. See 'Details' for a description of the necessary data column names.
+#' @param units Units for movement and location error models. One of `"meter"`
+#' (`"metre"`) or `"kilometer"` (`"kilometre"`). If the data are projected, it will automatically use the units
+#' of the locations and ignore this argument.
 #' @details To use this function the data set must contain the following columns with
 #' exact names: (1) \code{"type"}, indicate the type of location,
 #' (2) \code{"quality"} which indicates the Argos quality of the location, (3) The
@@ -18,19 +21,21 @@
 #' @import dplyr crawl
 #' @export
 #'
-cu_add_argos_cols <- function(x){
+cu_add_argos_cols <- function(x, units="meter"){
   if (inherits(x,"sf")) {
     proj_unit <- sf::st_crs(x, parameters = TRUE)$units_gdal
     if (proj_unit == "metre") {
       units <- 1
-    }
-    if (proj_unit == "kilometre") {
+    } else if (proj_unit == "kilometre") {
       units <- 1/1000
+    } else{
+      if(units %in% c('meter','metre')) units <- 1
+      if(units %in% c('kilometer','kilometre')) units <- 1/1000
     }
   } else {
     units <- 1
   }
-  
+
   error.corr <- quality <- ln.sd.x <- ln.sd.y <- error_area <- NULL #handle 'no visible binding...'
   col_nms <- colnames(x)
   if('error_semi_major_axis' %in% col_nms &

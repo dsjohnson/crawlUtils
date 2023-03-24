@@ -4,7 +4,13 @@
 \alias{cu_gmm_ud_sample}
 \title{Kernel density estimation for a posterior sample list}
 \usage{
-cu_gmm_ud_sample(smp_list, grid, ess = NULL, ...)
+cu_gmm_ud_sample(
+  smp_list,
+  grid,
+  ess = NULL,
+  return_gmm = FALSE,
+  mclust_args = list()
+)
 }
 \arguments{
 \item{smp_list}{A list of posterior track samples from \code{\link[crawl]{crwPostIS}} after
@@ -14,7 +20,9 @@ transformation via \code{\link[crawl]{crw_as_sf}}.}
 
 \item{ess}{Effective sample size.}
 
-\item{...}{Additional arguments passed to \code{\link[mclust]{densityMclust}}.}
+\item{return_gmm}{Logical. Return a list of Gaussian mixture model fits. Default is \code{FALSE}.}
+
+\item{mclust_args}{Named list of additional arguments to pass to \code{\link[mclust]{densityMclust}}}
 }
 \description{
 Kernel density estimation for a posterior sample list

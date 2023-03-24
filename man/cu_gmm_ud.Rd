@@ -4,7 +4,7 @@
 \alias{cu_gmm_ud}
 \title{Gaussian Mixture Model Utilization Density Estimation}
 \usage{
-cu_gmm_ud(pts, grid, ess = nrow(pts), type = "original", ...)
+cu_gmm_ud(pts, grid, ess = nrow(pts), type = "original", mclust_args = list())
 }
 \arguments{
 \item{pts}{A \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} object, or
@@ -18,7 +18,7 @@ their 'sf' versions (See \link[crawl]{crw_as_sf}).}
 argument. Set \code{type="vector"} to return only a vector of UD values. Finally, set \code{type="gmm"}
 to return the fitted \code{\link[mclust]{densityMclust}} object.}
 
-\item{...}{Additional arguments to pass to \code{\link[mclust]{densityMclust}}.}
+\item{mclust_args}{A named list of additional arguments to pass to \code{\link[mclust]{densityMclust}}.}
 }
 \description{
 Calculates a Gaussian KDE for \code{crawl} simulations and predictions.

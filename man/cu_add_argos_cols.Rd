@@ -5,11 +5,15 @@
 \title{Add columns for modeling FastGPS and ARGOS error structure in the same
 telemetry deployment}
 \usage{
-cu_add_argos_cols(x)
+cu_add_argos_cols(x, units = "meter")
 }
 \arguments{
 \item{x}{Data frame containing location telemetry data and Argos quality
 information. See 'Details' for a description of the necessary data column names.}
+
+\item{units}{Units for movement and location error models. One of \code{"meter"}
+(\code{"metre"}) or \code{"kilometer"} (\code{"kilometre"}). If the data are projected, it will automatically use the units
+of the locations and ignore this argument.}
 }
 \description{
 Columns are added to the telemetry data set so that multiple data types

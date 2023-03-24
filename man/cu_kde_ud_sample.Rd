@@ -7,11 +7,10 @@
 cu_kde_ud_sample(
   smp_list,
   grid,
-  kern = "iso",
   ess = NULL,
   norm = TRUE,
-  B = NULL,
-  B_subset = TRUE,
+  bw = NULL,
+  bw_subset = TRUE,
   ...
 )
 }
@@ -21,17 +20,15 @@ transformation via \code{\link[crawl]{crw_as_sf}}.}
 
 \item{grid}{An \code{\link[sf]{sf}} data frame containing the desired grid location for UD estimation.}
 
-\item{kern}{Type of covariance matrix for the Gaussian kernels.}
-
 \item{ess}{Effective sample size.}
 
 \item{norm}{Logical. Should each individual kernel be normalized to
 sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}}
 
-\item{B}{Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
+\item{bw}{Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
 sample size calculation is used for a plugin 2d Gaussian kernel.}
 
-\item{B_subset}{A vector of values indicating which \code{pts} should be used for calculating \code{B} if left unspecified.}
+\item{bw_subset}{A vector of values indicating which \code{pts} should be used for calculating \code{bw} if left unspecified.}
 
 \item{...}{Additional arguments passed to \code{\link[crawlUtils]{cu_vel_B}}}
 }

@@ -7,11 +7,10 @@
 cu_kde_ud(
   pts,
   grid,
-  kern = "iso",
   ess = NULL,
   norm = TRUE,
-  B = NULL,
-  B_subset = TRUE,
+  bw = NULL,
+  bw_subset = TRUE,
   type = "original",
   ...
 )
@@ -22,17 +21,15 @@ their 'sf' versions (See \link[crawl]{crw_as_sf}).}
 
 \item{grid}{An \code{\link[sf]{sf}} data frame containing the desired grid location for UD estimation.}
 
-\item{kern}{Type of covariance matrix for the Gaussian kernels.}
-
 \item{ess}{Effective sample size.}
 
 \item{norm}{Logical. Should each individual kernel be normalized to
 sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}}
 
-\item{B}{Kernel covariance matrix. Defaults to \code{B = NULL} and a effective
-sample size calculation is used for a plugin 2d Gaussian kernel.}
+\item{bw}{Kernel bandwidth (standard deviation of Gaussian kernel). Defaults to the
+default plugin bandwidth \code{bandwidth.nrd} in the \code{MASS} package.}
 
-\item{B_subset}{A vector of values indicating which \code{pts} should be used for calculating \code{B} if left unspecified.}
+\item{bw_subset}{A vector of values indicating which \code{pts} should be used for calculating \code{B} if left unspecified.}
 
 \item{type}{Form of the return type. Can be \code{"original"} to have the UD returned in the same form as the \code{grid}
 argument. Or set \code{type="vector"} to return only a vector of UD values.}
