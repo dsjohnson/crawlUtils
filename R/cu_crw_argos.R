@@ -42,6 +42,20 @@ cu_crw_argos <- function(data, move_phase=NULL, bm=FALSE, use_prior=TRUE,
     prior_lq <- function(x){sum(sapply(x,plq))}
   }
 
+  if (inherits(data,"sf")) {
+    proj_unit <- sf::st_crs(data, parameters = TRUE)$units_gdal
+    if (proj_unit == "metre") {
+      units <- 1
+    } else if (proj_unit == "kilometre") {
+      units <- 1/1000
+    } else{
+      if(units %in% c('meter','metre')) units <- 1
+      if(units %in% c('kilometer','kilometre')) units <- 1/1000
+    }
+  } else {
+    units <- 1
+  }
+
   data <- data |> dplyr::arrange(datetime)
 
   if(!is.null(move_phase)){
@@ -58,7 +72,7 @@ cu_crw_argos <- function(data, move_phase=NULL, bm=FALSE, use_prior=TRUE,
 
   # movement parameters quantities:
   if(!bm){
-    mov.theta <- c(rep(8,n.mov),rep(log(-log(0.1)),n.mov))
+    mov.theta <- c(rep(8+log(units),n.mov),rep(log(-log(0.1)),n.mov))
     mov.fix <- rep(NA, 2*n.mov)
     if(use_prior){
       mov.prior <- function(par){prior_b(tail(par,n.mov))}
@@ -67,7 +81,7 @@ cu_crw_argos <- function(data, move_phase=NULL, bm=FALSE, use_prior=TRUE,
     }
 
   } else if(bm){
-    mov.theta <- c(rep(8,n.mov))
+    mov.theta <- c(rep(8 + log(units),n.mov))
     mov.fix <- c(rep(NA, n.mov), rep(3, n.mov))
     mov.prior <- function(par){return(0)}
   } else{
