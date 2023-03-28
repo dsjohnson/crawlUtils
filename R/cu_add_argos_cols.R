@@ -75,6 +75,7 @@ cu_add_argos_cols <- function(x, units="meter"){
         type=="Argos_ls" & quality=="0" ~ log(2.25*1500*units),
         type=="Argos_ls" & quality=="A" ~ log(3.98*1500*units),
         type=="Argos_ls" & quality=="B" ~ log(7.37*1500*units),
+        type=="Argos_kf" ~ ln.sd.x + log(units),
         TRUE ~ ln.sd.x
       ),
       ln.sd.y = dplyr::case_when(
@@ -93,6 +94,7 @@ cu_add_argos_cols <- function(x, units="meter"){
         type=="Argos_ls" & quality=="0" ~ log(2.5*1500*units),
         type=="Argos_ls" & quality=="A" ~ log(3.67*1500*units),
         type=="Argos_ls" & quality=="B" ~ log(5.42*1500*units),
+        type=="Argos_kf" ~ ln.sd.y + log(units),
         TRUE ~ ln.sd.y
       ),
       error.corr = ifelse(is.na(.data$error.corr), 0, .data$error.corr),

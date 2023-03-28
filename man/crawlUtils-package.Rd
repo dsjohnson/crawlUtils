@@ -13,8 +13,8 @@ for ease of model fitting and track prediction, notably in marine environments.
 \tabular{ll}{
 Package: \tab crawlUtils\cr
 Type: \tab Package\cr
-Version: \tab 0.1.37\cr
-Date: \tab March 24, 2023\cr
+Version: \tab 0.1.39\cr
+Date: \tab March 27, 2023\cr
 License: \tab CC0 \cr
 LazyLoad: \tab yes\cr
 }
