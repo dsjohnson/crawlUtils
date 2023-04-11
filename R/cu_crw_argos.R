@@ -105,7 +105,7 @@ cu_crw_argos <- function(data, move_phase=NULL, bm=FALSE, use_prior=TRUE,
     initialSANN <- crw_control$initialSANN
   }
   if(is.null(crw_control$attempts)){
-    attempts <- 10
+    attempts <- 20
   }else{
     attempts <- crw_control$attempts
   }
