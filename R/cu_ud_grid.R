@@ -6,6 +6,8 @@
 #' @param barrier \code{sf} or \code{sfc} polygon data which represents areas for
 #' which the animal cannot travel. Use will only be calculated on the outside of
 #' each polygon in \code{barrier}.
+#' @param remove_holes Remove holes in grid. Can sometimes speed up computations if small islands or lakes are removed.
+#' defaults to `TRUE`.
 #' @param clique Logical. Should separated segments be noted so they might be removed later. Only applicable
 #' when a barrier is provided.
 #' @param ... Additional arguments passed to \code{\link[sf]{st_make_grid}} which
@@ -16,7 +18,7 @@
 #' @importFrom units set_units
 #' @export
 #'
-cu_ud_grid <- function(bb, barrier=NULL, clique=FALSE, ...){
+cu_ud_grid <- function(bb, barrier=NULL, remove_holes=TRUE, clique=FALSE, ...){
   geom <- NULL
   if(!inherits(bb, "bbox")) bb <- st_bbox(bb)
   grid <- st_make_grid(bb, ...) %>% st_as_sf()
@@ -27,7 +29,8 @@ cu_ud_grid <- function(bb, barrier=NULL, clique=FALSE, ...){
     grid_nc <- grid[!idx,] %>% rename_geometry("geometry")
     grid_c <- grid[idx,]
     rm(grid)
-    grid_c <- grid_c %>% st_difference(barrier) %>% nngeo::st_remove_holes()
+    grid_c <- grid_c %>% st_difference(barrier)
+    if(remove_holes) grid_c <- nngeo::st_remove_holes(grid_c)
     geom <- attr(grid_c, "sf_column")
     mgrid_c <- filter(grid_c, st_is(.data[[geom]],"MULTIPOLYGON")) %>% st_cast("POLYGON")
     grid_c <- filter(grid_c, st_is(.data[[geom]],"POLYGON")) %>% bind_rows(mgrid_c)

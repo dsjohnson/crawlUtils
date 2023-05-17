@@ -53,7 +53,7 @@ cu_download_osm <- function(force = FALSE, save_as_sf=TRUE) {
     chk <- st_is_valid(land)
     # all(chk)
     if(!all(chk)){
-      message("Repaing nonvalid polygons ...")
+      message("Repairing invalid polygons ...")
       ind <- which(!chk)
       # mapview(land[ind,])
       land[ind,] <- st_make_valid(land[ind,])
