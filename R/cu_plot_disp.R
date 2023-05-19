@@ -18,9 +18,9 @@ cu_plot_disp <- function(data, migr_tbl){
                                     by=c(datetime="start",datetime="end"),
                                     match_fun = list(`>=`, `<=`))
   plt <- ggplot() +
-    geom_point(aes(x=datetime, y=dist), alpha=0.1, color="slategray2",
+    geom_point(aes(x=datetime, y=dist), alpha=1, color="slategray2",
                data=ddd %>% filter(migr_evt=="0")) +
-    geom_point(aes(x=datetime, y=dist), alpha=0.1, color="darkred",
+    geom_point(aes(x=datetime, y=dist), alpha=1, color="darkred",
                data=ddd %>% filter(migr_evt=="1")) +
     theme_classic() +
     xlab("Date") + ylab("Dispersal (km)")
