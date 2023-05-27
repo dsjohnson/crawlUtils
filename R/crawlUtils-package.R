@@ -7,8 +7,8 @@
 #' \tabular{ll}{
 #' Package: \tab crawlUtils\cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.1.42\cr
-#' Date: \tab May 19, 2023\cr
+#' Version: \tab 0.1.44\cr
+#' Date: \tab May 26, 2023\cr
 #' License: \tab CC0 \cr
 #' LazyLoad: \tab yes\cr
 #' }
@@ -50,6 +50,21 @@ rename_geometry <- function(g, name){
   names(g)[names(g)==current] = name
   st_geometry(g)=name
   g
+}
+
+#' @import dplyr
+rm_dup <- function(x){
+  deploy_id <- datetime <- quality <- NULL
+  x <- x |>
+    group_by(deploy_id) |>
+    arrange(datetime, quality) |>
+    mutate(
+      rank = 1L,
+      rank = case_when(duplicated(datetime, fromLast = FALSE) ~
+                         lag(rank) + 1L, TRUE ~ rank)) |>
+    dplyr::filter(rank == 1) |>
+    ungroup() |>
+    arrange(deploy_id, datetime)
 }
 
 

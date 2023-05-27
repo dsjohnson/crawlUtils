@@ -2,15 +2,17 @@
 #' @description Read and combine data downloaded from Wildlife Computers portal
 #' into individual directories.
 #' @param x Directory containing the individual telemetry data directories.
+#' @param remove_duplicates Locgical. Should observations with duplicated times be removed? The observation
+#' with the highest quality will be retained.
 #' @export
-#' @author Devin S. Johnson
+#' @author Devin S. Johnson, Josh M. London
 #' @import lubridate dplyr
 #' @importFrom janitor clean_names
 #' @importFrom readr read_csv
 
-cu_read_wc_dirs <- function(x){
+cu_read_wc_dirs <- function(x, remove_duplicates=TRUE){
   #
-  Latitude <- Longitude <- NULL
+  Latitude <- Longitude <- quality <- NULL
   # Determine which file to load for each animal:
   dirs <- list.dirs(x)[-1]
   nms1 <- paste0(list.dirs(x, full.names=FALSE)[-1],
@@ -53,5 +55,14 @@ cu_read_wc_dirs <- function(x){
     id_data <- janitor::clean_names(id_data)
     locs <- bind_rows(locs, id_data)
   }
+  locs <- locs |> mutate(
+    quality = factor(quality, levels=c(as.character(11:0),"A","B","Z"))
+  )
+
+  if(remove_duplicates) locs <- rm_dup(locs)
+
 return(locs)
 }
+
+
+

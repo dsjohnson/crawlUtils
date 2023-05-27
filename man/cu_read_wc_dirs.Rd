@@ -4,15 +4,18 @@
 \alias{cu_read_wc_dirs}
 \title{Read individual telemetry data from Wildlife Computers portal directories}
 \usage{
-cu_read_wc_dirs(x)
+cu_read_wc_dirs(x, remove_duplicates = TRUE)
 }
 \arguments{
 \item{x}{Directory containing the individual telemetry data directories.}
+
+\item{remove_duplicates}{Locgical. Should observations with duplicated times be removed? The observation
+with the highest quality will be retained.}
 }
 \description{
 Read and combine data downloaded from Wildlife Computers portal
 into individual directories.
 }
 \author{
-Devin S. Johnson
+Devin S. Johnson, Josh M. London
 }
