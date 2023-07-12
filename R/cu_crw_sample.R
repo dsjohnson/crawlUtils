@@ -34,7 +34,8 @@ cu_crw_sample <- function(fit, size=8, predTime=NULL, barrier=NULL, vis_graph=NU
       samp <- samp %>% crawl::crw_as_sf(ftype="POINT", locType="p")
       samp <- samp %>% pathroutr::prt_trim(barrier)
       fix <- pathroutr::prt_reroute(samp, barrier, vis_graph, blend=FALSE)
-      samp <- pathroutr::prt_update_points(fix, samp) %>% dplyr::mutate(rep=j)
+      samp$geometry[fix$fid] <- fix$geometry
+      samp <- samp %>% dplyr::mutate(rep=j)
       attr(samp, "crw_type") <- "crwIS_sf"
     }
     if(as_sf & !route){

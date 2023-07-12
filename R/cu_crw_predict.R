@@ -31,7 +31,8 @@ cu_crw_predict <- function(fit, predTime=NULL, barrier=NULL, vis_graph=NULL, as_
     pred <- pred %>% crawl::crw_as_sf(ftype="POINT", locType="p") %>% filter(locType=="p")
     pred <- pred %>% pathroutr::prt_trim(barrier)
     fix <- pathroutr::prt_reroute(pred, barrier, vis_graph, blend=FALSE)
-    pred <- pathroutr::prt_update_points(fix, pred)
+    # pred <- pathroutr::prt_update_points(fix, pred)
+    pred$geometry[fix$fid] <- fix$geometry
     attr(pred, "crw_type") <- "crwPredict_sf"
   }
   if(as_sf & !route){

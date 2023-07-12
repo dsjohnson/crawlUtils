@@ -4,14 +4,14 @@
 #' from the 'base' time to detect changes in overall movement from small scale local movement
 #' to large scale migration.
 #' @param data An \code{sf} data set of locations with times noted by the 'datetime' column
-#' @param min_disp The minimum dispersion rate to be considered a migration insterval,
+#' @param min_disp The minimum dispersion rate to be considered a migration interval,
 #' e.g. 10 for a 10km dispersion minimum.
 #' @param max_num_mig The maximum number of migration intervals.
 #' @param min_phase_len The mimimum length of time that a migration or non-migration event
 #' will take, e.g., 7 implies a minimum of 7 time intervals for a phase.
 #' @param grid_res The temporal resolution at which migrations are detected. e.g., "day" (default) implies migration
-#' start and end is detected on a daily resoultion.
-#' @param base The location at which disperasion is measured. Can be one of \code{"first"} (first location),
+#' start and end is detected on a daily resolution.
+#' @param base The location at which dispersion is measured. Can be one of \code{"first"} (first location),
 #' \code{"last"} (final location), or some other \code{sf::sfc} point location.
 #' @param max_k The maximum degrees of freedom used by \code{mgcv::gam} to model dispersion and estimate
 #' the derivative of the dispersion function.

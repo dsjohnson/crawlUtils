@@ -17,7 +17,7 @@ cu_migration_det(
 \arguments{
 \item{data}{An \code{sf} data set of locations with times noted by the 'datetime' column}
 
-\item{min_disp}{The minimum dispersion rate to be considered a migration insterval,
+\item{min_disp}{The minimum dispersion rate to be considered a migration interval,
 e.g. 10 for a 10km dispersion minimum.}
 
 \item{max_num_mig}{The maximum number of migration intervals.}
@@ -26,9 +26,9 @@ e.g. 10 for a 10km dispersion minimum.}
 will take, e.g., 7 implies a minimum of 7 time intervals for a phase.}
 
 \item{grid_res}{The temporal resolution at which migrations are detected. e.g., "day" (default) implies migration
-start and end is detected on a daily resoultion.}
+start and end is detected on a daily resolution.}
 
-\item{base}{The location at which disperasion is measured. Can be one of \code{"first"} (first location),
+\item{base}{The location at which dispersion is measured. Can be one of \code{"first"} (first location),
 \code{"last"} (final location), or some other \code{sf::sfc} point location.}
 
 \item{max_k}{The maximum degrees of freedom used by \code{mgcv::gam} to model dispersion and estimate
