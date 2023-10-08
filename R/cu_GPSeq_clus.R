@@ -29,7 +29,8 @@
 #' @export
 cu_GPSeq_clus <- function(dat, search_radius_m, window_days, clus_min_locs = 2,
                           centroid_calc = "mean", show_plots = c(FALSE, "mean"), scale_plot_clus = TRUE,
-                          store_plots = FALSE, season_breaks_jul = NA, daylight_hrs = NA){
+                          store_plots = FALSE,
+                          season_breaks_jul = NA, daylight_hrs = NA){
 
   data <- AID <- TelemDate <- datetime <- y <- point_id <- sfg_id <- . <- .data <- x <- NULL
 
@@ -55,7 +56,8 @@ cu_GPSeq_clus <- function(dat, search_radius_m, window_days, clus_min_locs = 2,
     clus <- try(suppressWarnings(
       GPSeqClus::GPSeq_clus(dat=dat,search_radius_m=search_radius_m, window_days=window_days, clus_min_locs=clus_min_locs,
                             centroid_calc=centroid_calc, show_plots=show_plots, scale_plot_clus=scale_plot_clus,
-                            store_plots=store_plots, season_breaks_jul=season_breaks_jul, daylight_hrs=daylight_hrs)
+                            store_plots=store_plots,
+                            season_breaks_jul=season_breaks_jul, daylight_hrs=daylight_hrs)
     ), silent=TRUE)
     if(!inherits(clus,"try-error")){
       clus <- clus[[1]] |> rename(datetime=TelemDate) |> st_as_sf(coords=c("Long","Lat"), crs=4326) |>
