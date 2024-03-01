@@ -16,16 +16,27 @@ cu_read_wc_dirs <- function(x, remove_duplicates=TRUE){
   # Determine which file to load for each animal:
   dirs <- list.dirs(x)[-1]
   nms1 <- paste0(list.dirs(x, full.names=FALSE)[-1],
-                 "-1-Locations.csv"
+                 "-2-Locations.csv"
   )
   loc_file1 <- paste(dirs, nms1, sep="/")
   nms2 <- paste0(list.dirs(x, full.names=FALSE)[-1],
-                 "-Locations.csv"
+                 "-1-Locations.csv"
   )
   loc_file2 <- paste(dirs, nms2, sep="/")
+  nms3 <- paste0(list.dirs(x, full.names=FALSE)[-1],
+                 "-Locations.csv"
+  )
+  loc_file3 <- paste(dirs, nms3, sep="/")
+
 
   # Container for file names
-  loc_file <- ifelse(file.exists(loc_file1), loc_file1, loc_file2)
+  if(file.exists(loc_file1)){
+    loc_file <- loc_file1
+  } else if(file.exists(loc_file2)){
+    loc_file <- loc_file2
+  } else{
+    loc_file <- loc_file3
+  }
 
   # Read in data and combine into single table
   # There are 2 animals with no location data
