@@ -30,13 +30,9 @@ cu_read_wc_dirs <- function(x, remove_duplicates=TRUE){
 
 
   # Container for file names
-  if(file.exists(loc_file1)){
-    loc_file <- loc_file1
-  } else if(file.exists(loc_file2)){
-    loc_file <- loc_file2
-  } else{
-    loc_file <- loc_file3
-  }
+
+  loc_file <- ifelse(file.exists(loc_file1), loc_file1, loc_file2)
+  loc_file <- ifelse(file.exists(loc_file), loc_file, loc_file3)
 
   # Read in data and combine into single table
   # There are 2 animals with no location data
