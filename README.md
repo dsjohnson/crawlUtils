@@ -13,7 +13,9 @@ alt="r-universe" />
 ### Binary
 
 ``` r
-install.packages('crawlUtils', repos='https://dsjohnson.r-universe.dev')
+install.packages('crawlUtils', 
+                 repos=c('https://dsjohnson.r-universe.dev',  'https://cloud.r-project.org')
+)
 ```
 
 ### Source
@@ -21,7 +23,9 @@ install.packages('crawlUtils', repos='https://dsjohnson.r-universe.dev')
 *You will need a C++ compiler for R*
 
 ``` r
-install.packages('crawlUtils', type='source', repos='https://dsjohnson.r-universe.dev')
+install.packages('crawlUtils', type='source', 
+                 repos=c('https://dsjohnson.r-universe.dev', 'https://cloud.r-project.org')
+)
 ```
 
 ## github
