@@ -1,5 +1,11 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+<figure>
+<img src="https://r-lib.r-universe.dev/badges/crawlUtils"
+alt="r-universe" />
+<figcaption aria-hidden="true">r-universe</figcaption>
+</figure>
+
 # Installation
 
 ## R-Universe

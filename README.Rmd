@@ -14,6 +14,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+![r-universe](https://r-lib.r-universe.dev/badges/crawlUtils) 
+
 # Installation
 
 ## R-Universe
