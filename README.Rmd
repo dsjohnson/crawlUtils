@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 ```{r, eval=FALSE}
 install.packages('crawlUtils', 
-                 repos=c('https://dsjohnson.r-universe.dev',  'https://cloud.r-project.org')
+                 repos=c('https://dsjohnson.r-universe.dev','https://cloud.r-project.org')
 )
 ```
 
@@ -34,7 +34,7 @@ install.packages('crawlUtils',
 
 ```{r, eval=FALSE}
 install.packages('crawlUtils', type='source', 
-                 repos=c('https://dsjohnson.r-universe.dev', 'https://cloud.r-project.org')
+                 repos=c('https://dsjohnson.r-universe.dev','https://cloud.r-project.org')
 )
 ```
 
