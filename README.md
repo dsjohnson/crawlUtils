@@ -1,12 +1,8 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<figure>
-<img src="https://r-lib.r-universe.dev/badges/crawlUtils"
-alt="r-universe" />
-<figcaption aria-hidden="true">r-universe</figcaption>
-</figure>
-
-# Installation
+[![crawlUtils status
+badge](https://dsjohnson.r-universe.dev/badges/crawlUtils)](https://dsjohnson.r-universe.dev/crawlUtils)
+\# Installation
 
 ## R-Universe
 
@@ -14,7 +10,7 @@ alt="r-universe" />
 
 ``` r
 install.packages('crawlUtils', 
-                 repos=c('https://dsjohnson.r-universe.dev',  'https://cloud.r-project.org')
+                 repos=c('https://dsjohnson.r-universe.dev','https://cloud.r-project.org')
 )
 ```
 
@@ -24,7 +20,7 @@ install.packages('crawlUtils',
 
 ``` r
 install.packages('crawlUtils', type='source', 
-                 repos=c('https://dsjohnson.r-universe.dev', 'https://cloud.r-project.org')
+                 repos=c('https://dsjohnson.r-universe.dev','https://cloud.r-project.org')
 )
 ```
 
