@@ -11,22 +11,23 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // kde_estimate
-NumericVector kde_estimate(NumericMatrix grid, NumericMatrix points, NumericMatrix B, bool norm);
-RcppExport SEXP _crawlUtils_kde_estimate(SEXP gridSEXP, SEXP pointsSEXP, SEXP BSEXP, SEXP normSEXP) {
+NumericVector kde_estimate(NumericMatrix grid, NumericMatrix points, NumericMatrix B, NumericVector w, bool norm);
+RcppExport SEXP _crawlUtils_kde_estimate(SEXP gridSEXP, SEXP pointsSEXP, SEXP BSEXP, SEXP wSEXP, SEXP normSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type grid(gridSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type points(pointsSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type B(BSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
     Rcpp::traits::input_parameter< bool >::type norm(normSEXP);
-    rcpp_result_gen = Rcpp::wrap(kde_estimate(grid, points, B, norm));
+    rcpp_result_gen = Rcpp::wrap(kde_estimate(grid, points, B, w, norm));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_crawlUtils_kde_estimate", (DL_FUNC) &_crawlUtils_kde_estimate, 4},
+    {"_crawlUtils_kde_estimate", (DL_FUNC) &_crawlUtils_kde_estimate, 5},
     {NULL, NULL, 0}
 };
 

@@ -13,11 +13,10 @@
 #' @import dplyr sf
 #' @importFrom stats sd
 #' @export
-#'
-cu_kde_ud_sample <- function(smp_list, grid, ess=NULL, norm=TRUE, bw=NULL, bw_subset=TRUE,...){
+cu_kde_ud_sample <- function(smp_list, grid, ess=NULL, use_w=TRUE, norm=TRUE, bw=NULL, bw_subset=TRUE,...){
   cell <- ud <- ud_tmp <- NULL
-  out <- cu_kde_ud(smp_list[[1]], grid=grid, ess=ess, norm=norm, bw=bw, bw_subset=bw_subset, type="skeleton",...)
-  umat <- sapply(smp_list, cu_kde_ud, grid=grid, ess=ess, norm=norm, bw=bw, bw_subset=bw_subset, type="vector",...)
+  out <- cu_kde_ud(smp_list[[1]], grid=grid, ess=ess, norm=norm, bw=bw, use_w=use_w, bw_subset=bw_subset, type="skeleton",...)
+  umat <- sapply(smp_list, cu_kde_ud, grid=grid, ess=ess, norm=norm, bw=bw, use_w=use_w, bw_subset=bw_subset, type="vector",...)
   out$ud <- rowMeans(umat)
   out$se_ud <- apply(umat, 1, sd)
   return(out)

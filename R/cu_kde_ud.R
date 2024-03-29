@@ -3,7 +3,8 @@
 #' @param pts A \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} object, or
 #' their 'sf' versions (See \link[crawl]{crw_as_sf}).
 #' @param grid An \code{\link[sf]{sf}} data frame containing the desired grid location for UD estimation.
-#' @param ess Effective sample size.
+#' @param ess Effective sample size object or a `crwFit` object. See `link[crawlUtils]{cu_crw_ess}`.
+#' @param use_w Use weights from the `ess` object for a weighted KDE.
 #' @param norm Logical. Should each individual kernel be normalized to
 #' sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}
 #' @param bw Kernel bandwidth (standard deviation of Gaussian kernel). Defaults to the
@@ -17,7 +18,7 @@
 #' @useDynLib crawlUtils, .registration = TRUE
 #' @export
 #'
-cu_kde_ud <- function(pts, grid, ess=NULL, norm=TRUE, bw=NULL, bw_subset=TRUE, type="original", ...){
+cu_kde_ud <- function(pts, grid, ess=NULL, use_w=TRUE, norm=TRUE, bw=NULL, bw_subset=TRUE, type="original", ...){
 
   ### Checks
   gorig <- NULL
@@ -45,11 +46,11 @@ cu_kde_ud <- function(pts, grid, ess=NULL, norm=TRUE, bw=NULL, bw_subset=TRUE, t
   if(!is.null(ess)){
     if(inherits(ess, "crwFit")){
       ess <- cu_crw_ess(ess, pts)
-    } else if(!is.numeric(ess)){
-      stop("The 'ess' argument must be either a 'crwFit' object or numeric if specified.")
+    } else if(!inherits(ess, "crwESS")){
+      stop("The 'ess' argument must be either a 'crwFit' or 'crwESS' object.")
     }
-  }else{
-    ess <- nrow(pts)
+  } else{
+    ess <- list(Ne = nrow(pts), w = rep(1/nrow(pts), nrow(pts)))
   }
 
   ### Compute bandwidth matrix
@@ -61,7 +62,7 @@ cu_kde_ud <- function(pts, grid, ess=NULL, norm=TRUE, bw=NULL, bw_subset=TRUE, t
       {
         r <- quantile(x, c(0.25, 0.75))
         h <- (r[2] - r[1])/1.34
-        (1.06 * min(sqrt(var(x)), h) * ess^(-1/5))^2
+        (1.06 * min(sqrt(var(x)), h) * ess$Ne^(-1/5))^2
       }
       xy_B <- xy_pts[bw_subset,]
       B <- diag(c(defbw(xy_B[,1], ess), defbw(xy_B[,2], ess)))
@@ -70,8 +71,15 @@ cu_kde_ud <- function(pts, grid, ess=NULL, norm=TRUE, bw=NULL, bw_subset=TRUE, t
     } else if(is.numeric(bw) & length(bw==1)){
       B <- diag(rep(bw^2,2))
     }
-    else{stop("Error in 'bw' specification!")}
-    ud <- kde_estimate(grid=xy_grid, points=xy_pts, B=solve(B), norm = norm)
+    else{
+      stop("Error in 'bw' specification!")
+    }
+    if(use_w){
+      w <- ess$w
+    } else{
+      w <- rep(1/nrow(xy_pts), nrow(xy_pts))
+    }
+    ud <- kde_estimate(grid=xy_grid, points=xy_pts, B=solve(B), w=w, norm = norm)
   }
   else {
     ud <- NA

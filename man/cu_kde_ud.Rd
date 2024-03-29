@@ -8,6 +8,7 @@ cu_kde_ud(
   pts,
   grid,
   ess = NULL,
+  use_w = TRUE,
   norm = TRUE,
   bw = NULL,
   bw_subset = TRUE,
@@ -21,7 +22,9 @@ their 'sf' versions (See \link[crawl]{crw_as_sf}).}
 
 \item{grid}{An \code{\link[sf]{sf}} data frame containing the desired grid location for UD estimation.}
 
-\item{ess}{Effective sample size.}
+\item{ess}{Effective sample size object or a \code{crwFit} object. See \verb{link[crawlUtils]\{cu_crw_ess\}}.}
+
+\item{use_w}{Use weights from the \code{ess} object for a weighted KDE.}
 
 \item{norm}{Logical. Should each individual kernel be normalized to
 sum-to-one over the locations in \code{grid}. Defaults to \code{kern = TRUE}}

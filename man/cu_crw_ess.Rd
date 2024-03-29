@@ -10,7 +10,7 @@ cu_crw_ess(fit, aug = NULL)
 \item{fit}{A \code{crwFit} object (See \code{\link[crawl]{crwMLE}}).}
 
 \item{aug}{Either a \code{\link[crawl]{crwPredict}} or \code{\link[crawl]{crwPostIS}} objects
-from which the extra \code{predTime} location times will be used in the calculation.
+from which the extra location times will be used in the calculation.
 The \code{\link[crawl]{crw_as_sf}} transformed versions of these objects will also work.}
 }
 \description{
@@ -18,8 +18,10 @@ Estimates the number of independent locations in a CRW data set
 using the mutual information method of Bartoszek (2016).
 }
 \details{
-Uses the "mutual information" formulation of Bartoszek (2016) to calculate the
-equivalent number of independent animal locations.
+This function uses the "mutual information" effective sample size of Bartoszek (2016) to calculate the
+equivalent number of independent animal locations. It also calculates individual contributions of each location using the
+regression effective sample size in Bartoszek (2016). The output is a named list with \code{Ne} equal to the overall sample
+and \code{w} is a vector of weights that sum to 1 overall. If you want the ESS value of each observation \code{Ne * w} will provide it.
 }
 \references{
 Bartoszek, K. (2016). Phylogenetic effective sample size.

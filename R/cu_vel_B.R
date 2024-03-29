@@ -1,7 +1,7 @@
 #' @title Compute velocity based kernel density estimate bandwidth
 #' @param pts A prediction or simulation data set produced by \code{\link[crawlUtils]{cu_crw_predict}} or
 #' \code{\link[crawlUtils]{cu_crw_sample}}
-#' @param ess An effective sample size value
+#' @param ess An effective sample size object. See `\link[crawlUtils]{cu_crw_ess}`.
 #' @param vel_quant A quantile value for the observed average velocities, e.g., 0.5 would imply use of the median
 #' observed average velocity between time points
 #' @param vel_fix A fixed value for the average velocity used
@@ -9,7 +9,7 @@
 #' @export
 #' @importFrom lubridate duration
 #' @importFrom stats quantile
-cu_vel_B <- function(pts, ess=nrow(pts), vel_quant=0.5, vel_fix=NULL, time_scale="hours"){
+cu_vel_B <- function(pts, ess=list(nrow(pts),rep(1/nrow(pts), nrow(pts))), vel_quant=0.5, vel_fix=NULL, time_scale="hours"){
   if(!inherits(pts, "sf")) stop("Input 'pts' needs to be of class 'sf'!")
   time <- pts$datetime
   dt <- as.numeric(diff(time))/as.numeric(lubridate::duration(1,time_scale))
@@ -21,7 +21,7 @@ cu_vel_B <- function(pts, ess=nrow(pts), vel_quant=0.5, vel_fix=NULL, time_scale
   }
   rt <- diff(range(time))
   units(rt) <- time_scale
-  tpo <- as.numeric(rt/ess)
+  tpo <- as.numeric(rt/ess$Ne)
   B <- diag(rep((vel_fix*tpo/2)^2,2))
   return(B)
 }

@@ -6,7 +6,7 @@
 \usage{
 cu_vel_B(
   pts,
-  ess = nrow(pts),
+  ess = list(nrow(pts), rep(1/nrow(pts), nrow(pts))),
   vel_quant = 0.5,
   vel_fix = NULL,
   time_scale = "hours"
@@ -16,7 +16,7 @@ cu_vel_B(
 \item{pts}{A prediction or simulation data set produced by \code{\link[crawlUtils]{cu_crw_predict}} or
 \code{\link[crawlUtils]{cu_crw_sample}}}
 
-\item{ess}{An effective sample size value}
+\item{ess}{An effective sample size object. See \verb{\link[crawlUtils]\{cu_crw_ess\}}.}
 
 \item{vel_quant}{A quantile value for the observed average velocities, e.g., 0.5 would imply use of the median
 observed average velocity between time points}
