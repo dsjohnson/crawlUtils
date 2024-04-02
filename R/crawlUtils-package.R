@@ -8,7 +8,7 @@
 #' Package: \tab crawlUtils\cr
 #' Type: \tab Package\cr
 #' Version: \tab 0.1.51\cr
-#' Date: \tab March 27, 2024\cr
+#' Date: \tab April 2, 2024\cr
 #' License: \tab CC0 \cr
 #' LazyLoad: \tab yes\cr
 #' }
