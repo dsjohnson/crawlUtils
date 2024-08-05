@@ -3,7 +3,7 @@
 #' @param prob a vector of probabilities for the contours
 #' @param barrier A barrier polygon (e.g., land in a marine setting) that is trimmed out of the contours
 #' @param smoothness Determines how much smoothing is done on the ud pixels.
-#' See {smoothr} package function \code{\link[smoothr]{smooth}}.
+#' See \code{smoothr} package function \code{\link[smoothr]{smooth}}.
 #' @param ... Further arguments (other than "smoothness") passed to \code{\link[smoothr]{smooth}}.
 #' @author Devin S. Johnson
 #' @import smoothr

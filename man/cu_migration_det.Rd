@@ -7,8 +7,8 @@
 cu_migration_det(
   data,
   min_disp,
-  max_num_mig = 1,
-  min_phase_len = 3,
+  migr_disp_cut = 1,
+  min_bout_len = 3,
   grid_res = "day",
   base = "first",
   max_k = 100
@@ -20,10 +20,10 @@ cu_migration_det(
 \item{min_disp}{The minimum dispersion rate to be considered a migration interval,
 e.g. 10 for a 10km dispersion minimum.}
 
-\item{max_num_mig}{The maximum number of migration intervals.}
+\item{migr_disp_cut}{The minimum per day dispersal rate to categorize a movement bout as "migratory" Defaults to 1.}
 
-\item{min_phase_len}{The mimimum length of time that a migration or non-migration event
-will take, e.g., 7 implies a minimum of 7 time intervals for a phase.}
+\item{min_bout_len}{The mimimum length of time that a migration or non-migration event
+will take, e.g., 7 implies a minimum of 7 time intervals for a bout.}
 
 \item{grid_res}{The temporal resolution at which migrations are detected. e.g., "day" (default) implies migration
 start and end is detected on a daily resolution.}
@@ -36,7 +36,7 @@ the derivative of the dispersion function.}
 }
 \description{
 Creates a data table that indicates the times of different
-phases of movement. This method uses changes in the overall dispersion rate of the animal
+bouts of movement. This method uses changes in the overall dispersion rate of the animal
 from the 'base' time to detect changes in overall movement from small scale local movement
 to large scale migration.
 }

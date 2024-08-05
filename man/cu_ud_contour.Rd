@@ -14,7 +14,7 @@ cu_ud_contour(ud, prob, barrier, smoothness, ...)
 \item{barrier}{A barrier polygon (e.g., land in a marine setting) that is trimmed out of the contours}
 
 \item{smoothness}{Determines how much smoothing is done on the ud pixels.
-See {smoothr} package function \code{\link[smoothr]{smooth}}.}
+See \code{smoothr} package function \code{\link[smoothr]{smooth}}.}
 
 \item{...}{Further arguments (other than "smoothness") passed to \code{\link[smoothr]{smooth}}.}
 }

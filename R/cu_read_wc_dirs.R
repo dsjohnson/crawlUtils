@@ -15,31 +15,22 @@ cu_read_wc_dirs <- function(x, remove_duplicates=TRUE){
   Latitude <- Longitude <- quality <- NULL
   # Determine which file to load for each animal:
   dirs <- list.dirs(x)[-1]
-  nms1 <- paste0(list.dirs(x, full.names=FALSE)[-1],
-                 "-2-Locations.csv"
-  )
-  loc_file1 <- paste(dirs, nms1, sep="/")
-  nms2 <- paste0(list.dirs(x, full.names=FALSE)[-1],
-                 "-1-Locations.csv"
-  )
-  loc_file2 <- paste(dirs, nms2, sep="/")
-  nms3 <- paste0(list.dirs(x, full.names=FALSE)[-1],
-                 "-Locations.csv"
-  )
-  loc_file3 <- paste(dirs, nms3, sep="/")
-
-
-  # Container for file names
-
-  loc_file <- ifelse(file.exists(loc_file1), loc_file1, loc_file2)
-  loc_file <- ifelse(file.exists(loc_file), loc_file, loc_file3)
 
   # Read in data and combine into single table
   # There are 2 animals with no location data
   locs <- NULL
-  for(i in 1:length(loc_file)){
-    if(!file.exists(loc_file[i])) next
-    id_data <- readr::read_csv(loc_file[i], show_col_types=FALSE) %>%
+  for(i in 1:length(dirs)){
+    loc_paths <- list.files(dirs[[i]], pattern="*-Locations.csv")
+    if(length(loc_paths)==1){
+      loc_file <- loc_paths[[1]]
+    } else{
+      loc_paths <- strsplit(loc_paths,"-")
+      loc_paths <- loc_paths[sapply(loc_paths, "length")>2]
+      run <- as.numeric(sapply(loc_paths, \(x) x[[2]]))
+      loc_file <- paste(loc_paths[run==max(run)][[1]], collapse="-")
+    }
+    loc_file <- paste0(dirs[[i]],"/",loc_file)
+    id_data <- readr::read_csv(loc_file, show_col_types=FALSE) %>%
       filter(!is.na(Latitude), !is.na(Longitude))
     time <- parse_date_time(id_data$Date,"%H:%M:%S %d-%b-%Y", quiet=TRUE)
     if(all(is.na(time))){
