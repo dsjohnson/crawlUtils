@@ -102,8 +102,8 @@ cu_migration_det <- function(data, min_disp, migr_disp_cut = 1, min_bout_len=3,
     ) %>% arrange(bout)
   summ$end[1:(nrow(summ)-1)] <- summ$end[1:(nrow(summ)-1)]+duration(grid_res)
   summ$avg_disp_rate <- units::set_units(summ$avg_disp_rate, paste0("km/",grid_res), mode='standard')
-  summ$travel_evt <- factor(summ$travel_evt)
-  summ$bout <- factor(summ$bout)
+  summ$travel_evt <- summ$travel_evt
+  summ$bout <- summ$bout
 
   attr(summ, "base") <- base
 

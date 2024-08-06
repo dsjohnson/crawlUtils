@@ -8,7 +8,7 @@
 #' @author Devin S. Johnson
 #' @import sf fuzzyjoin dplyr ggplot2
 cu_plot_disp <- function(data, migr_tbl){
-  datetime <- dist <- migr_evt <- NULL
+  datetime <- dist <- travel_evt <- NULL
   base <- attr(migr_tbl, "base")
   ddd <- data.frame(
     datetime = data$datetime,
@@ -19,9 +19,9 @@ cu_plot_disp <- function(data, migr_tbl){
                                     match_fun = list(`>=`, `<=`))
   plt <- ggplot() +
     geom_point(aes(x=datetime, y=dist), alpha=1, color="slategray2",
-               data=ddd %>% filter(migr_evt=="0")) +
+               data=ddd %>% filter(travel_evt=="0")) +
     geom_point(aes(x=datetime, y=dist), alpha=1, color="darkred",
-               data=ddd %>% filter(migr_evt=="1")) +
+               data=ddd %>% filter(travel_evt=="1")) +
     theme_classic() +
     xlab("Date") + ylab("Dispersal (km)")
   return(plt)
