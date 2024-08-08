@@ -24,7 +24,7 @@
 #'
 cu_migration_det <- function(data, min_disp, migr_disp_cut = 1, min_bout_len=3,
                              grid_res="day", base="first", max_k=100){
-  travel_evt <- bout <- datetime <- disp_rate <- NULL
+  travel <- bout <- datetime <- disp_rate <- NULL
   if(base=="first"){
     base <- data[1,] %>% st_geometry()
   } else if(base=="last"){
@@ -49,8 +49,7 @@ cu_migration_det <- function(data, min_disp, migr_disp_cut = 1, min_bout_len=3,
   grid2 <- ceiling_date(max(ddd$datetime), grid_res)
   newdata <- data.frame(datetime = seq(grid1, grid2, grid_res))
   newdata$time <- with(newdata,
-                       as.numeric(datetime)/as.numeric(duration(1, grid_res))
-  )
+                       as.numeric(datetime)/as.numeric(duration(1, grid_res)))
   X <- predict(dfit, newdata=newdata, type="lpmatrix")
   der <- abs(diff(X%*%coef(dfit)))
   # D <- -1*diag(nrow(newdata))
@@ -90,10 +89,10 @@ cu_migration_det <- function(data, min_disp, migr_disp_cut = 1, min_bout_len=3,
   # if(trl>max_num_mig) warning("There were multiple migration events with the same length")
   # x$values[x$values==1 & x$length<min(top_runs)] <- 0
   x$values <- cumsum(x$values)*x$values
-  newdata$travel_evt <- c(inverse.rle(x),tail(x$values,1))
+  newdata$travel <- c(inverse.rle(x),tail(x$values,1))
   newdata$disp_rate <- c(der, NA)
-  newdata$bout <-with(rle(newdata$travel_evt), rep(seq_along(values), lengths))
-  summ <- group_by(newdata, travel_evt, bout) %>%
+  newdata$bout <-with(rle(newdata$travel), rep(seq_along(values), lengths))
+  summ <- group_by(newdata, travel, bout) %>%
     summarize(
       start = as.Date(min(datetime)),
       end = as.Date(max(datetime)),
@@ -102,7 +101,7 @@ cu_migration_det <- function(data, min_disp, migr_disp_cut = 1, min_bout_len=3,
     ) %>% arrange(bout)
   summ$end[1:(nrow(summ)-1)] <- summ$end[1:(nrow(summ)-1)]+duration(grid_res)
   summ$avg_disp_rate <- units::set_units(summ$avg_disp_rate, paste0("km/",grid_res), mode='standard')
-  summ$travel_evt <- summ$travel_evt
+  summ$travel <- summ$travel
   summ$bout <- summ$bout
 
   attr(summ, "base") <- base
