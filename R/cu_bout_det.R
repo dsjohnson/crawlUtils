@@ -1,4 +1,4 @@
-#' @title Migration detection
+#' @title Movement bout detection
 #' @description Creates a data table that indicates the times of different
 #' bouts of movement. This method uses changes in the overall dispersion rate of the animal
 #' from the 'base' time to detect changes in overall movement from small scale local movement
@@ -22,7 +22,7 @@
 #' @importFrom stats coef dist predict vcov coefficients lm
 #' @importFrom mclust Mclust
 #'
-cu_migration_det <- function(data, min_disp, migr_disp_cut = 1, min_bout_len=3,
+cu_bout_det <- function(data, min_disp, migr_disp_cut = 1, min_bout_len=3,
                              grid_res="day", base="first", max_k=100){
   travel <- bout <- datetime <- disp_rate <- NULL
   if(base=="first"){
@@ -46,7 +46,7 @@ cu_migration_det <- function(data, min_disp, migr_disp_cut = 1, min_bout_len=3,
   )
   suppressWarnings(dfit <- mgcv::gam(dist~s(time, k=k, bs='ad'), data=ddd, method='REML'))
   grid1 <- floor_date(min(ddd$datetime), grid_res)
-  grid2 <- ceiling_date(max(ddd$datetime), grid_res)
+  grid2 <- ceiling_date(max(ddd$datetime), grid_res) + duration(grid_res)
   newdata <- data.frame(datetime = seq(grid1, grid2, grid_res))
   newdata$time <- with(newdata,
                        as.numeric(datetime)/as.numeric(duration(1, grid_res)))
@@ -95,14 +95,15 @@ cu_migration_det <- function(data, min_disp, migr_disp_cut = 1, min_bout_len=3,
   summ <- group_by(newdata, travel, bout) %>%
     summarize(
       start = as.Date(min(datetime)),
-      end = as.Date(max(datetime)),
+      # end = as.Date(max(datetime)),
       avg_disp_rate = mean(disp_rate, na.rm=TRUE),
       .groups="drop"
     ) %>% arrange(bout)
-  summ$end[1:(nrow(summ)-1)] <- summ$end[1:(nrow(summ)-1)]+duration(grid_res)
+  # summ$end[1:(nrow(summ)-1)] <- summ$end[1:(nrow(summ)-1)]+duration(grid_res)
   summ$avg_disp_rate <- units::set_units(summ$avg_disp_rate, paste0("km/",grid_res), mode='standard')
-  summ$travel <- summ$travel
-  summ$bout <- summ$bout
+  # summ$travel <- summ$travel
+  # summ$bout <- summ$bout
+  summ <- rbind(summ, data.frame(travel=NA, bout=NA, start=as.Date(max(ddd$datetime)) + duration(grid_res), avg_disp_rate=NA))
 
   attr(summ, "base") <- base
 

@@ -1,23 +1,22 @@
 #' @title Add migration detection results to original location data
-#' @description Add \code{migr_evt}
-#' See \code{\link[crawlUtils]{cu_migration_det}}
+#' @description Add bout data from \code{migr_evt}
+#' See \code{\link[crawlUtils]{cu_bout_det}}
 #' @param data Original data used by \code{cu_migration_det}.
-#' @param migr_tbl Results table produced by \code{cu_migration_det}.
+#' @param bout_tbl Results table produced by \code{cu_migration_det}.
 #' @export
 #' @author Devin S. Johnson
 #' @import sf fuzzyjoin dplyr ggplot2
 
-cu_add_migration <- function(data, migr_tbl){
-  migr_evt <- phase <- datetime <- start <- end <- avg_disp_rate <- NULL
-  if("migr_evt" %in% colnames(data)) data <- select(data, -migr_evt)
-  if("phase" %in% colnames(data)) data <- select(data, -phase)
-  data <- fuzzyjoin::fuzzy_left_join(data,migr_tbl,
+cu_add_bouts <- function(data, bout_tbl){
+  travel <- bout <- datetime <- start <- end <- avg_disp_rate <- NULL
+  if("travel" %in% colnames(data)) data <- select(data, -travel)
+  if("bout" %in% colnames(data)) data <- select(data, -bout)
+  bout_end <- bout_tbl$start[-1]
+  bout_tbl <- head(bout_tbl,-1)
+  bout_tbl$end <- bout_end
+  data <- fuzzyjoin::fuzzy_left_join(data,bout_tbl,
                                      by=c(datetime="start",datetime="end"),
                                      match_fun = list(`>=`, `<`))
-  starts <- migr_tbl %>% select(start, migr_evt, phase) %>%
-    rename(datetime=start) %>% slice(-1)
-  data <- full_join(data, starts, by = c("datetime", "migr_evt", "phase"))
-  data <- data %>% select(-start, -end, -avg_disp_rate) %>%
-    arrange(datetime)
+  data <- arrange(data, datetime)
   return(data)
 }

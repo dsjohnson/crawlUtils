@@ -10,7 +10,7 @@
 #' @author Devin S. Johnson
 #' @export
 #'
-cu_add_bouts <- function(x, gap=7, time_unit="days", ...){
+cu_add_gaps <- function(x, gap=7, time_unit="days", ...){
   . <- NULL #handle 'no visible binding...'
   time <- x$datetime
   dt <- diff(time) %>% `units<-`(time_unit)

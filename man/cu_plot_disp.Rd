@@ -4,17 +4,17 @@
 \alias{cu_plot_disp}
 \title{Plot migration detection results}
 \usage{
-cu_plot_disp(data, migr_tbl)
+cu_plot_disp(data, bout_tbl)
 }
 \arguments{
-\item{data}{Original data used by \code{cu_migration_det}.}
+\item{data}{Original data used by \code{cu_bout_det}.}
 
-\item{migr_tbl}{Results table produced by \code{cu_migration_det}.}
+\item{bout_tbl}{Results table produced by \code{cu_bout_det}.}
 }
 \description{
 PLot the animal dispersion from the base location over time. Points
 are colored to reflect estimated migration and non-migration phases.
-See \code{\link[crawlUtils]{cu_migration_det}}
+See \code{\link[crawlUtils]{cu_bout_det}}
 }
 \author{
 Devin S. Johnson
