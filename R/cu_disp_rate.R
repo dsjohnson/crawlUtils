@@ -36,7 +36,7 @@ cu_disp_rate <- function(bout_tbl, data, grid_res="day", base="first"){
   ddd <- ddd %>% group_by(bout) %>% nest()
   ddd$avg_disp_rate <- foreach(i=1:nrow(ddd), .combine = c)%do%{
     as.numeric(tail(ddd$data[[i]]$dist, 1) - ddd$data[[i]]$dist[[1]])
-    rate <- /as.numeric(diff(range(ddd$data[[i]]$datetime)))
+    rate <- as.numeric(diff(range(ddd$data[[i]]$datetime)))
     units::set_units(rate,  paste0("km/",grid_res), mode='standard')
   }
   ddd$total_disp <- foreach(i=1:nrow(ddd), .combine = c)%do%{
