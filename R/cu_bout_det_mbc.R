@@ -74,12 +74,12 @@ cu_bout_det_mbc <- function(data, min_disp, migr_speed_cut = 1, min_bout_len=3, 
   ddd$bout <-with(rle(ddd$travel), rep(seq_along(values), lengths))
   summ <- group_by(ddd, travel, bout) %>%
     summarize(
-      start = floor_date(min(datetime)),
+      start = floor_date(min(datetime), grid_res) %>% as.Date,
       # end = as.Date(max(datetime)),
       avg_speed = mean(speed, na.rm=TRUE),
       .groups="drop"
     ) %>% arrange(bout)
-  summ <- rbind(summ, data.frame(travel=NA, bout=NA, start=floor_date(max(ddd$datetime)) + duration(grid_res), avg_speed=NA))
+  summ <- rbind(summ, data.frame(travel=NA, bout=NA, start=as.Date(floor_date(max(ddd$datetime), grid_res) + duration(grid_res)), avg_speed=NA))
 
   attr(summ, "base") <- base
 
