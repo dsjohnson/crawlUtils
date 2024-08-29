@@ -8,8 +8,6 @@
 #' each polygon in \code{barrier}.
 #' @param remove_holes Remove holes in grid. Can sometimes speed up computations if small islands or lakes are removed.
 #' defaults to `TRUE`.
-#' @param clique Logical. Should separated segments be noted so they might be removed later. Only applicable
-#' when a barrier is provided.
 #' @param ... Additional arguments passed to \code{\link[sf]{st_make_grid}} which
 #' is used to construct the base grid.
 #' @author Devin S. Johnson
@@ -18,16 +16,20 @@
 #' @importFrom units set_units
 #' @export
 #'
-cu_ud_grid <- function(bb, barrier=NULL, remove_holes=TRUE, clique=FALSE, ...){
+cu_ud_grid <- function(bb, barrier=NULL, remove_holes=TRUE, ...){
   geom <- NULL
   if(!inherits(bb, "bbox")) bb <- st_bbox(bb)
   grid <- st_make_grid(bb, ...) %>% st_as_sf()
+
+  # browser()
+
   if(!is.null(barrier)){
+    barrier <- st_union(barrier)
     grid_bb <- st_bbox(grid) %>% st_expand(1.1) %>% st_as_sfc()
     barrier <- st_intersection(barrier, grid_bb)
     idx <- lengths(st_intersects(grid, barrier)) > 0
     grid_nc <- grid[!idx,] %>% rename_geometry("geometry")
-    grid_c <- grid[idx,]
+    grid_c <- grid[idx,] %>%  rename_geometry("geometry")
     rm(grid)
     grid_c <- grid_c %>% st_difference(barrier)
     if(remove_holes) grid_c <- nngeo::st_remove_holes(grid_c)
@@ -36,16 +38,11 @@ cu_ud_grid <- function(bb, barrier=NULL, remove_holes=TRUE, clique=FALSE, ...){
     grid_c <- filter(grid_c, st_is(.data[[geom]],"POLYGON")) %>% bind_rows(mgrid_c)
     rm(mgrid_c)
     grid_c <- rename_geometry(grid_c, "geometry")
-    grid <- bind_rows(grid_nc, grid_c)
+    grid <- bind_rows(grid_nc, grid_c) %>% st_geometry() %>% st_as_sf()
+    grid <- rename_geometry(grid, "geometry")
   }
   grid$cell <- 1:nrow(grid)
   grid$area <- st_area(grid)
-  if(!is.null(barrier) & clique){
-    message("The 'clique' argument is not currnetly functional. It is ignored for the time being.")
-  #   dmat <- st_distance(grid) |> units::drop_units()
-  #   hc <- hclust(as.dist(dmat>1), method="single")
-  #   grid$clique = cutree(hc, h=0.5)
-  }
   if(max(grid$area)>units::set_units(1e+06,"m^2")) grid$area <- units::set_units(grid$area, "km^2")
   attr(grid,"grid_id") <- as.character(as.numeric(Sys.time()))
   return(grid)
