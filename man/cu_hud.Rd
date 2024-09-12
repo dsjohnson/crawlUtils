@@ -4,16 +4,16 @@
 \alias{cu_hud}
 \title{Highest utilization density}
 \usage{
-cu_hud(ud, alpha = 0.9)
+cu_hud(ud, prob = 0.9)
 }
 \arguments{
-\item{ud}{A \code{ud_df} object output from \code{\link{cu_kde_ud}}.}
+\item{ud}{A \code{SpatRaster} object output from \code{\link{cu_sf_kde}}.}
 
-\item{alpha}{The percent cutoff for the highest utilization probability cells. Defaults to \code{alpha = 0.9}.}
+\item{prob}{The percent cutoff for the highest utilization probability cells. Defaults to \code{prob = 0.9}.}
 }
 \description{
 The lowest 1-alpha percent of a utilization distribution is removed
-to give a highest alpha\\% UD which can be used as a home range estimate, or just
+to give a highest prob\\% UD which can be used as a home range estimate, or just
 reduce spatial extent of UDs for a animal with a small spatial scale of use relative to the study area
 }
 \author{

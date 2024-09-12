@@ -1,7 +1,7 @@
 #' Calculate an empirical utilization distribution
 #'
 #' @param pts an sf point object
-#' @param grid a grid created from [cu_ud_grid()]
+#' @param grid a  `SpatRaster` on which to evaluate the UD.
 #' @param average should an average UD be created from 1 or more pts layers
 #'
 #' @return grid with an additional column, _npts_ or _mean_pts_

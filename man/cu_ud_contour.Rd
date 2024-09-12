@@ -4,19 +4,14 @@
 \alias{cu_ud_contour}
 \title{Approximate contours for a UD}
 \usage{
-cu_ud_contour(ud, prob, barrier, smoothness, ...)
+cu_ud_contour(ud, prob = seq(0.9, 0.1, -0.1), trim_pixel = TRUE)
 }
 \arguments{
-\item{ud}{A \code{ud_df} object output from \code{\link{cu_kde_ud}} or  \code{\link{cu_kde_ud_sample}}.}
+\item{ud}{A \code{SpatRaster} created by \verb{\link[crawlUtils]\{cu_sf_kde\}}}
 
 \item{prob}{a vector of probabilities for the contours}
 
-\item{barrier}{A barrier polygon (e.g., land in a marine setting) that is trimmed out of the contours}
-
-\item{smoothness}{Determines how much smoothing is done on the ud pixels.
-See \code{smoothr} package function \code{\link[smoothr]{smooth}}.}
-
-\item{...}{Further arguments (other than "smoothness") passed to \code{\link[smoothr]{smooth}}.}
+\item{trim_pixel}{Logical. Should contour areas less than a pixel size be trimmed? defaults to \code{TRUE}.}
 }
 \description{
 Approximate contours for a UD

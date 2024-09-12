@@ -7,8 +7,8 @@
 #' \tabular{ll}{
 #' Package: \tab crawlUtils\cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.1.56\cr
-#' Date: \tab August 28, 2024\cr
+#' Version: \tab 0.1.62\cr
+#' Date: \tab September 12, 2024\cr
 #' License: \tab CC0 \cr
 #' LazyLoad: \tab yes\cr
 #' }
@@ -27,7 +27,7 @@
 #' @aliases crawlUtils-package crawlUtils
 #' @author Devin S. Johnson
 #' Maintainer: Devin S. Johnson <devin.johnson@@noaa.gov>
-#' @useDynLib crawlUtils, .registration = TRUE
+# #' @useDynLib crawlUtils, .registration = TRUE
 #'
 "_PACKAGE"
 
@@ -64,6 +64,51 @@ rm_dup <- function(x){
     dplyr::filter(rank == 1) |>
     ungroup() |>
     arrange(deploy_id, datetime)
+}
+
+#' @title Silverman default bandwidth calculation
+#' @param xy Data coordinates
+#' @param ess An effective sample size. If left as `NULL`, `nrow(xy)` is used.
+#' @importFrom stats quantile
+#' @export
+bw_silver <- function (xy, ess=NULL)
+{
+  bw <- NULL
+  if(is.null(ess)) ess <- nrow(xy)
+  for(i in 1:2){
+    iqr <- diff(quantile(xy[,i], c(0.25, 0.75)))
+    h <- 1.06 * min(sqrt(var(xy[,i])), iqr/1.34) * ess^(-1/5)
+    bw <- c(bw,h)
+  }
+  return(bw)
+}
+
+bw_scott <- function (xy, ess=NULL)
+{
+  v <- mean(var(xy[,1]), var(xy[,2]))
+  if(is.null(ess)) ess <- nrow(xy)
+  h <- 1.06 * sqrt(v) * ess^(-1/5)
+  return(c(h,h))
+}
+
+bw_def <- function(xy, ess=NULL, groups=NULL){
+  if(!is.null(groups)){
+    grp_lvl <- unique(groups)
+    ng <- length(grp_lvl)
+    if(ng==1){
+     h <- bw_scott(xy,ess)
+    } else{
+      h_k <- rep(NA, ng)
+      for(k in 1:length(grp_lvl)){
+        xy_k <- xy[groups==grp_lvl[k],]
+        h_k[k] <- bw_scott(xy_k,ess)
+      }
+      h <- mean(h_k)
+    }
+  } else{
+    h <- bw_scott(xy,ess)
+  }
+  return(h)
 }
 
 

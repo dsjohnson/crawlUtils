@@ -1,8 +1,8 @@
 Package: crawlUtils
 Type: Package
 Title: Enhance And Integrate the {crawl} Package For Spatial Analysis Of Telemetry Output
-Version: 0.1.56
-Date: 2024-08-28
+Version: 0.1.62
+Date: 2024-09-12
 Authors@R: c(
   person("Devin S.", "Johnson", email = "devin.johnson@noaa.gov",role = c("aut", "cre")),
   person("Josh", "London", email = "josh.london@noaa.gov", role = c("aut"))
@@ -15,12 +15,11 @@ Description: Utility functions to augment the the {crawl} package and integrate
 License: CC0
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 Imports: fuzzyjoin, dplyr, lubridate, magrittr, purrr, tidyr,
-    sf, crawl, foreach, nngeo, units, janitor, readr, ggplot2, mgcv,
-    smoothr, mclust
+    sf, crawl, foreach, units, janitor, readr, ggplot2, mgcv, 
+    mclust, terra, MASS
 Suggests: pathroutr, ctmm
 Remotes: 
   jmlondon/pathroutr
-LinkingTo: Rcpp

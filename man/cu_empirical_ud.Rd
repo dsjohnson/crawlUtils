@@ -9,7 +9,7 @@ cu_empirical_ud(pts, grid, average = TRUE)
 \arguments{
 \item{pts}{an sf point object}
 
-\item{grid}{a grid created from \code{\link[=cu_ud_grid]{cu_ud_grid()}}}
+\item{grid}{a  \code{SpatRaster} on which to evaluate the UD.}
 
 \item{average}{should an average UD be created from 1 or more pts layers}
 }
